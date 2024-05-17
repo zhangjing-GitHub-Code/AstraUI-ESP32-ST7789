@@ -7,3 +7,4 @@
 *.inoL
 .pio/build
 .pio/libdeps/**/*.o
+**/examples/**
