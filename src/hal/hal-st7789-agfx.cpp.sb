@@ -1,0 +1,137 @@
+#include <U8g2lib.h>
+#include<cstring>
+#include <TFT_eSPI.h>
+#include <Adafruit_ST7789.h>
+#define GFX_BL 25
+
+#define FL float
+
+#include "hal.h"
+
+U8G2_NULL u8g2f(U8G2_R0);
+const int
+  P_DC = 25,
+  P_CS = 5,
+  P_SCL = 18,
+  P_SDA = 23,
+  P_RST = 15;
+
+#define TFT_CS 5
+#define TFT_MOSI 23
+#define TFT_SCLK 18
+
+class ESPHAL:HAL{
+	private:
+	Adafruit_ST7789 *bus = new Adafruit_ST7789(
+	  P_DC /* DC */,
+	  P_RST /* RST */,
+	  // P_SCL /* MOSI */,
+	  // P_SDA /* CLK */,
+	  // GFX_NOT_DEFINED /* CS */,
+	  // HSPI
+	  P_CS
+	);
+	TFT_eSPI *tfdev=new TFT_eSPI();
+	TFT_eSprite *tgfx=new TFT_eSprite(tfdev);
+	/*Arduino_GFX *tfdev = new Arduino_ST7789(
+	  bus,
+	  P_RST /* RST * /,
+	  0 /* rotation * /,
+	  true /* IPS * /,
+	  240 /* width * /,
+	  240 /* height * /,
+	  0 /* col offset 1 * /,
+	  0 /* row offset 1 * /,
+	  0 /* col offset 2 * /,
+	  0 /* row offset 2 * /
+	);
+	Arduino_Canvas *tgfx = new Arduino_Canvas(240 /* width * /, 240 /* height * /, tfdev,
+	                                            0 /* output_x * /, 0 /* output_y * /);
+	*/
+	int cur_color;
+	void init(){ // hz 1 KHZ 1000 MHZ 1000000
+		tgfx->begin(60000000);
+	}
+	void setColorCompat(int col) {
+	  // 0 -> blank
+	  // 1 -> draw
+	  // 2 -> XOR (tmp as 1)
+		if (col == 0) {
+			cur_color = BLACK;
+		} else if (col == 1) {
+			cur_color = WHITE;
+		} else if (col == 2) {
+			cur_color = WHITE;
+		}
+	}
+	// tft
+	public:
+	void _drawPixel(FL x,FL y){
+		int16_t tx=x,ty=y;
+		tgfx->drawPixel(tx,ty,cur_color);
+	}
+	void _drawBox(FL x,FL y,FL w,FL h){
+		int16_t tx=x,ty=y,th=h,tw=w;
+		tgfx->drawRect(tx,ty,tw,th,cur_color);
+	}
+	void _canvasClear(){
+		tgfx->fillScreen(0);
+	}
+	uint16_t *_getCanvasBuffer(){
+		return (uint16_t*)(tgfx->frameBuffer(1));
+	}
+	uint8_t _getBufferTileHeight(){
+		// return tgfx->;
+	}
+	void _screenOn(){
+		tgfx->();
+	}
+	void _screenOff(){
+		tgfx->displayOff();
+	}
+	void _canvasUpdate(){
+		tgfx->flush();
+	}
+	void _drawVLine(FL x,FL y,FL h){
+		int16_t _x=x,_y=y,_h=h;
+		tgfx->drawFastVLine(_x,_y,_h,cur_color);
+	}
+	// *S*S* h=5?
+	// * h=1
+	// Current Y value:
+	void _drawVDottedLine(FL x,FL y,FL h){
+		int16_t _x=x,_y=y,_h=h;
+		for(int cy=_y;cy<_y+_h;cy+=2){
+			tgfx->drawPixel(_x,cy,cur_color);
+		}
+	}
+	void _drawHLine(FL x,FL y,FL w){
+		int16_t _x=x,_y=y,_w=w;
+		tgfx->drawFastHLine(_x,_y,_w,cur_color);
+	}
+	void _drawHDottedLine(FL x,FL y,FL w){
+		int16_t _x=x,_y=y,_w=w;
+		// *S*S* h=5?
+		// * h=1
+		// Current X value:
+		for(int cx=_x;cx<_x+_w;cx+=2){
+			tgfx->drawPixel(cx,_y,cur_color);
+		}
+	}
+	void _drawBox(FL x,FL y,FL w,FL h){
+		int16_t _x=x,_y=y,_w=w,_h=h;
+		tgfx->drawRect(_x,_y,_w,_h,cur_color);
+	}
+	void _drawRBox(FL x,FL y,FL w,FL h,FL r){
+		int16_t _x=x,_y=y,_w=w,_h=h,_r=r;
+		tgfx->drawRoundRect(_x,_y,_w,_h,_r,cur_color);
+	}
+	void _drawFrame(FL x,FL y,FL w,FL h){
+		int16_t _x=x,_y=y,_w=w,_h=h;
+		//tgfx->draw(_x,_y,_w,_h,cur_color);
+	}
+	void _drawRFrame(FL x,FL y,FL w,FL h,FL r){
+		int16_t _x=x,_y=y,_w=w,_h=h,_r=r;
+		tgfx->drawRoundRect(_x,_y,_w,_h,_r,cur_color);
+	}
+};
