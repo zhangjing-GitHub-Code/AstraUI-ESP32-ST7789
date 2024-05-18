@@ -37,6 +37,8 @@ void ESPHAL::init(){ // hz 1 KHZ 1000 MHZ 1000000
 	pinMode(EC_B,INPUT);
 	Serial.println("Inited Pin IN mode.\nDone HAL init.");
 	::delay(500);
+	tgfx->setUTF8Print(true);
+	dum_u8g2->enableUTF8Print();
 	//attachInterrupt(EC_A,enc_resolv,FALLING);
 }
 
@@ -115,7 +117,7 @@ void ESPHAL::_drawChinese(float _x, float _y, const std::string &_text){
 	tgfx->print(_text.c_str());
 }
 void ESPHAL::_drawEnglish(float _x, float _y, const std::string &_text){
-	tgfx->setUTF8Print(0);
+	tgfx->setUTF8Print(1);
 	tgfx->setCursor(I16 _x,I16 _y);
 	tgfx->print(_text.c_str());
 }
@@ -134,7 +136,7 @@ UL ESPHAL::_millis(){
 	return ::millis();
 }
 UL ESPHAL::_getTick(){
-	return ::millis()*100;
+	return ::millis()*10;
 }
 // uint8_t ESPHAL::_getBufferTileHeight(){return 0;}
 uint8_t ESPHAL::_getBufferTileWidth(){return 0;}
@@ -156,12 +158,20 @@ void ESPHAL::_setDrawType(uint8_t type){
 	dum_u8g2->setDrawColor(type);
 	// tgfx->setDrawMode(type);
 	if(type==0){
+		tgfx->setTextColor(0);
+		dumCol=BLACK;
 	}else if(type==1){
 		tgfx->setTextColor(WHITE);
 		dumCol=WHITE;
-	}else if(type==2){
-		tgfx->setTextColor(0);
-		dumCol=BLACK;
+	}
+	if(type==2){ // Draw XOR
+		// tgfx->setTextColor(0);
+		tgfx->setXORdraw(1);
+		// dumCol=WHITE;
+		// _printInfo("SETTING 2");
+		// dumCol=BLACK;
+	}else{
+		tgfx->setXORdraw(0);
 	}
 }
 void ESPHAL::_updateConfig(){

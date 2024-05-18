@@ -14,6 +14,7 @@
 #define UL unsigned long
 
 #include "hal.h"
+#include "AGFX-CM-Enhance.h"
 
 #ifndef HAL_ESP_ST7789_H
 #define HAL_ESP_ST7789_H
@@ -55,7 +56,7 @@ class ESPHAL:public HAL{
 	  0 /* col offset 2 */,
 	  0 /* row offset 2 */
 	);
-	Arduino_Canvas_Indexed *tgfx = new Arduino_Canvas_Indexed(240 /* width */, 240 /* height */, tfdev,
+	Arduino_Canvas_Idx_Enhanced *tgfx = new Arduino_Canvas_Idx_Enhanced(240 /* width */, 240 /* height */, tfdev,
 	                                            0 /* output_x */, 0 /* output_y */);
 	int dumCol;
 	void enc_resolv(){

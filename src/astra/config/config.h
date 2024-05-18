@@ -55,7 +55,7 @@ struct config {
   float tileBarHeight = 2; //磁贴进度条高度
 
   float tileSelectBoxLineLength = 5;  //磁贴选择框线长
-  float tileSelectBoxMargin = 3; //选择框边距
+  float tileSelectBoxMargin = 4; //选择框边距
   float tileSelectBoxWidth = tileSelectBoxMargin * 2 + tilePicWidth; //选择框宽
   float tileSelectBoxHeight = tileSelectBoxMargin * 2 + tilePicHeight; //选择框高
   float tileTitleHeight = 8; //磁贴标题高度
@@ -73,7 +73,7 @@ struct config {
 
   const unsigned char *logoTitleFont = u8g2_font_lubB18_tr;
   const unsigned char *logoCopyRightFont = u8g2_font_chargen_92_tf;
-  const unsigned char *mainFont = u8g2_font_maniac_tr;
+  const unsigned char *mainFont = u8g2_font_unifont_t_chinese3;
 
   //如果未使用u8g2库 请自行修改这里
   //const unsigned char *logoTitleFont = u8g2_font_Cascadia;

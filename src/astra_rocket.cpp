@@ -21,7 +21,7 @@ void astraCoreInit(void) {
   HAL::inject(new ESPHAL);
 
   HAL::delay(350);
-  astra::drawLogo(1000);
+  astra::drawLogo(100);
 
   rootPage->addItem(new astra::List("test1"));
   rootPage->addItem(new astra::List("测试2"));

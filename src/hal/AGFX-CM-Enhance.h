@@ -1,5 +1,6 @@
+#pragma once
 #include <Arduino_GFX_Library.h>
-class Arduino_Canvas_Mono_Enhanced:public Arduino_Canvas_Mono{
+class Arduino_Canvas_Idx_Enhanced:public Arduino_Canvas_Indexed{
 	private:
 	enum eDrawMode{
 		NORMAL,
@@ -7,15 +8,24 @@ class Arduino_Canvas_Mono_Enhanced:public Arduino_Canvas_Mono{
 		XOR
 	};
 	eDrawMode _drawMode=NORMAL;
+	bool _doXORdraw=false;
+	uint8_t idx_white,idx_black;
 	public:
-	Arduino_Canvas_Mono_Enhanced(int16_t w, int16_t h, Arduino_G *output, int16_t output_x, int16_t output_y, bool verticalByte=0)
-    : Arduino_Canvas_Mono(w, h,output,output_x,output_y,verticalByte){};
-	~Arduino_Canvas_Mono_Enhanced(){
+	Arduino_Canvas_Idx_Enhanced(int16_t w, int16_t h, Arduino_G *output, int16_t output_x, int16_t output_y, bool verticalByte=0)
+    : Arduino_Canvas_Indexed(w, h,output,output_x,output_y){
+		idx_black=get_color_index(BLACK);
+		idx_white=get_color_index(WHITE);
+	};
+	~Arduino_Canvas_Idx_Enhanced(){
 		if (_framebuffer){
 			free(_framebuffer);
 		}
 	}
-	void _setBufTo(int32_t pos,uint16_t x,uint16_t y);
-	void writePixelPreclipped(int16_t x, int16_t y, uint16_t color) override;
-	void setDrawMode(uint8_t mode);
+	// void _setBufTo(int32_t pos,uint16_t x,uint16_t y);
+	void writePixelPreclipped(int16_t x, int16_t y, uint16_t color);
+	void writeFastVLineCore(int16_t x,int16_t y,int16_t h,uint8_t idx);
+	void writeFastHLineCore(int16_t x, int16_t y, int16_t w, uint8_t idx);
+	void writeFillRectPreclipped(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color);
+	void setColorCheck(uint8_t *fb, uint8_t idx);
+	void setXORdraw(bool isXOR);
 };
