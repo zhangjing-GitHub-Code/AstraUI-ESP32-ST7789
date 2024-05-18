@@ -70,7 +70,7 @@ void astraCoreInit(void) {
 //  HAL::printInfo("check your program!");
 //  HAL::delay(100);
   HAL::delay(350);
-  astra::drawLogo(1000);
+  astra::drawLogo(100);
 
   rootPage->addItem(new astra::Menu("test1", pic_0));
   rootPage->addItem(new astra::Menu("测试2", pic_1));

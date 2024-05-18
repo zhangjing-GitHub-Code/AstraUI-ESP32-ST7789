@@ -7,6 +7,7 @@
 
 #include <string>
 #include <utility>
+#include <array>
 #include <vector>
 #include "../astra/config/config.h"
 
@@ -23,17 +24,15 @@ typedef enum keyFilter {
 } KEY_FILTER;
 
 typedef enum keyAction {
-  RELEASE = 0,
+  INVALID = 0,
   CLICK,
   PRESS,
 } KEY_ACTION;
-
 
 typedef enum KeyType {
   KEY_NOT_PRESSED = 0,
   KEY_PRESSED,
 } KEY_TYPE;
-
 
 typedef enum keyIndex {
   KEY_0 = 0,
@@ -52,10 +51,9 @@ namespace led {
 
 namespace sys {
 struct config {
-  uint8_t screenWeight = 240;
-  uint8_t screenHeight = 240;
+  unsigned char screenWeight = 240;
+  unsigned char screenHeight = 240;
   float screenBright = 255;
-  //todo place other param of system
 };
 
 static config &getSystemConfig() {
@@ -94,13 +92,13 @@ public:
 
   virtual void *_getCanvasBuffer() { return nullptr; }
 
-  static uint8_t getBufferTileHeight() { return get()->_getBufferTileHeight(); }
+  static unsigned char getBufferTileHeight() { return get()->_getBufferTileHeight(); }
 
-  virtual uint8_t _getBufferTileHeight() { return 0; }
+  virtual unsigned char _getBufferTileHeight() { return 0; }
 
-  static uint8_t getBufferTileWidth() { return get()->_getBufferTileWidth(); }
+  static unsigned char getBufferTileWidth() { return get()->_getBufferTileWidth(); }
 
-  virtual uint8_t _getBufferTileWidth() { return 0; }
+  virtual unsigned char _getBufferTileWidth() { return 0; }
 
   static void canvasUpdate() { get()->_canvasUpdate(); }
 
@@ -110,28 +108,27 @@ public:
 
   virtual void _canvasClear() {}
 
-  static void setFont(const uint8_t *_font) { get()->_setFont(_font); }
+  static void setFont(const unsigned char *_font) { get()->_setFont(_font); }
 
-  virtual void _setFont(const uint8_t *_font) {}
+  virtual void _setFont(const unsigned char *_font) {}
 
-  static uint8_t getFontWidth(std::string &_text) { return get()->_getFontWidth(_text); }
+  static unsigned char getFontWidth(std::string &_text) { return get()->_getFontWidth(_text); }
 
-  virtual uint8_t _getFontWidth(std::string &_text) { return 0; }
+  virtual unsigned char _getFontWidth(std::string &_text) { return 0; }
 
-  static uint8_t getFontHeight() { return get()->_getFontHeight(); }
+  static unsigned char getFontHeight() { return get()->_getFontHeight(); }
 
-  virtual uint8_t _getFontHeight() { return 0; }
+  virtual unsigned char _getFontHeight() { return 0; }
 
-  static void setDrawType(uint8_t _type) { get()->_setDrawType(_type); }
+  static void setDrawType(unsigned char _type) { get()->_setDrawType(_type); }
 
-  virtual void _setDrawType(uint8_t _type) {}
+  virtual void _setDrawType(unsigned char _type) {}
 
   static void drawPixel(float _x, float _y) { get()->_drawPixel(_x, _y); }
 
   virtual void _drawPixel(float _x, float _y) {}
 
   //notice: _x和_y是字体左下角的坐标 _x and _y is the coordinate the lower left corner of the font
-  //todo 检查所有的draw函数的坐标是否是左下角的坐标
   static void drawEnglish(float _x, float _y, const std::string &_text) { get()->_drawEnglish(_x, _y, _text); }
 
   virtual void _drawEnglish(float _x, float _y, const std::string &_text) {}
@@ -156,7 +153,7 @@ public:
 
   virtual void _drawHLine(float _x, float _y, float _l) {}
 
-  static void drawBMP(float _x, float _y, float _w, float _h, const uint8_t *_bitMap) {
+  static void drawBMP(float _x, float _y, float _w, float _h, const unsigned char *_bitMap) {
     get()->_drawBMP(_x,
                     _y,
                     _w,
@@ -164,7 +161,7 @@ public:
                     _bitMap);
   }
 
-  virtual void _drawBMP(float _x, float _y, float _w, float _h, const uint8_t *_bitMap) {}
+  virtual void _drawBMP(float _x, float _y, float _w, float _h, const unsigned char *_bitMap) {}
 
   static void drawBox(float _x, float _y, float _w, float _h) { get()->_drawBox(_x, _y, _w, _h); }
 
@@ -231,9 +228,9 @@ public:
 
   virtual void _beepStop() {}
 
-  static void setBeepVol(uint8_t _vol) { get()->_setBeepVol(_vol); }
+  static void setBeepVol(unsigned char _vol) { get()->_setBeepVol(_vol); }
 
-  virtual void _setBeepVol(uint8_t _vol) {}
+  virtual void _setBeepVol(unsigned char _vol) {}
 
   static void screenOn() { get()->_screenOn(); }
 
@@ -246,6 +243,11 @@ public:
   /**
    * @brief key.
    */
+
+public:
+  key::KEY_ACTION key[key::KEY_NUM] = {static_cast<key::keyAction>(0)};
+  key::KEY_TYPE keyFlag { static_cast<key::KEY_TYPE>(0) };
+
 public:
   static bool getKey(key::KEY_INDEX _keyIndex) { return get()->_getKey(_keyIndex); }
 
@@ -255,8 +257,9 @@ public:
 
   virtual bool _getAnyKey();
 
-protected:
-  key::keyAction key[key::KEY_NUM] = {static_cast<key::keyAction>(0)};
+  static key::KEY_ACTION *getKeyMap() { return get()->key; }
+
+  static key::KEY_TYPE *getKeyFlag() { return &get()->keyFlag; }
 
 public:
   static void keyScan() { get()->_keyScan(); }

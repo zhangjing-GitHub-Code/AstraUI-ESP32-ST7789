@@ -28,11 +28,11 @@ const int
   EC_A=35,
   EC_B=36;
 const int CFG_START_POS=0;
-const int TOUCH_KEY0=12,
-		  TOUCH_KEY1=13;
+const int TOUCH_KEY0=13,
+		  TOUCH_KEY1=27; // T7
 class ESPHAL:public HAL{
 	private:
-	key::KEY_TYPE keyFlag;
+	// key::KEY_TYPE keyFlag;
 	bool _fontSet=false;
 	U8G2_NULL *dum_u8g2=new U8G2_NULL(U8G2_R0);
 	Arduino_DataBus *bus = new Arduino_ESP32SPI(
@@ -123,13 +123,13 @@ public:  void _beep(float _freq) override;
    * @brief key.
    */
 public:  bool _getKey(key::KEY_INDEX _keyIndex) override;
-  bool _getAnyKey();
+  // bool _getAnyKey();
 
 protected:
   key::keyAction key[key::KEY_NUM] = {static_cast<key::keyAction>(0)};
 
-public:  void _keyScan();
-  void _keyTest();
+public: //  void _keyScan();
+  // void _keyTest();
 
   /**
    * @brief system config.

@@ -24,8 +24,8 @@ void astraCoreDestroy(void);
 }
 
 /*---- Cpp ----*/
-#include "./ui/launcher.h"
-// #include "../hal/hal_dreamCore/hal_dreamCore.h"
+#include "./src/astra/ui/launcher.h"
+#include "hal/hal-st7789-agfx.h"
 
 extern astra::Launcher* astraLauncher;
 extern astra::Menu* rootPage;

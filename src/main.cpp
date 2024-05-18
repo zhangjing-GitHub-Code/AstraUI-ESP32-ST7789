@@ -11,6 +11,14 @@ void setup(){
 }
 bool fuck=1;
 void loop(){
+	/*
+	Serial.print("P27 t=");
+	Serial.println(touchRead(27));
+	Serial.print("P13 t=");
+	Serial.println(touchRead(13));
+	delay(500);
+	return;
+	*/
 	astraCoreStart();
 	if(fuck){
 		Serial.println("FUCK");

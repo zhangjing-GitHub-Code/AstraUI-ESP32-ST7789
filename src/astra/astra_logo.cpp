@@ -7,7 +7,7 @@
 
 namespace astra {
 
-/***
+/**
  *   *     *      *         *
  *    *     powered by *    *
  *       * Astra UI *
@@ -36,8 +36,6 @@ void drawLogo(uint16_t _time) {
 
     static std::string text = "astra UI";
     static std::string copyRight = "powered by";
-	//HAL::printInfo("Before Set Font\n");
-	//HAL::delay(50);
 
     HAL::setFont(getUIConfig().logoTitleFont);
     static float xTitle = (HAL::getSystemConfig().screenWeight - HAL::getFontWidth(text)) / 2;
@@ -55,8 +53,6 @@ void drawLogo(uint16_t _time) {
     static float yBackGround = 0 - HAL::getSystemConfig().screenHeight - 1;
 
     static float yBackGroundTrg = 0;
-	//HAL::printInfo("Set BG vars\n");
-	//HAL::delay(50);
 
     if (time < _time) {
       yBackGroundTrg = 0;
@@ -66,7 +62,7 @@ void drawLogo(uint16_t _time) {
         yStarsTrg.clear();
         xStars.clear();
 
-        for (uint8_t i = 0; i < getUIConfig().logoStarNum; i++) {
+        for (unsigned char i = 0; i < getUIConfig().logoStarNum; i++) {
           //设置随机种子
           srand(HAL::getRandomSeed() * 7);
 
@@ -88,8 +84,6 @@ void drawLogo(uint16_t _time) {
       yTitleTrg = 0 - getUIConfig().logoTextHeight - 1;
       yCopyRightTrg = 0 - getUIConfig().logoCopyRightHeight - 1;
     }
-	//HAL::printInfo("Before Draw Stars\n");
-	//HAL::delay(50);
 
     //遮罩先进场 然后是星星 然后是文字
     //一起退场
@@ -103,7 +97,7 @@ void drawLogo(uint16_t _time) {
     HAL::drawHLine(0, yBackGround + HAL::getSystemConfig().screenHeight, HAL::getSystemConfig().screenWeight);
 
     //画星星
-    for (uint8_t i = 0; i < getUIConfig().logoStarNum; i++) {
+    for (unsigned char i = 0; i < getUIConfig().logoStarNum; i++) {
       HAL::drawHLine(xStars[i] - getUIConfig().logoStarLength - 1, yStars[i], getUIConfig().logoStarLength);
       HAL::drawHLine(xStars[i] + 2, yStars[i], getUIConfig().logoStarLength);
       HAL::drawVLine(xStars[i], yStars[i] - getUIConfig().logoStarLength - 1, getUIConfig().logoStarLength);
@@ -121,7 +115,7 @@ void drawLogo(uint16_t _time) {
 
     HAL::canvasUpdate();
 
-    if (time >= _time /*&& yBackGround == 0 - HAL::getSystemConfig().screenHeight - 1*/) onRender = false;
+    if (time >= _time && yBackGround == 0 - HAL::getSystemConfig().screenHeight - 1) onRender = false;
   }
 }
 }

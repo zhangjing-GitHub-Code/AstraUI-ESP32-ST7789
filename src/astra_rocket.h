@@ -3,7 +3,7 @@
 // 此文件的作用是引导STM32进入astra UI 基于C++
 // this file is used to guide STM32 into astra UI based on C++
 //
-#pragma once
+
 #ifndef ASTRA_CORE_SRC_ASTRA_ASTRA_ROCKET_H_
 #define ASTRA_CORE_SRC_ASTRA_ASTRA_ROCKET_H_
 
@@ -15,7 +15,6 @@ extern "C" {
 
 void astraCoreInit(void);
 void astraCoreStart(void);
-void astraCoreTest(void);
 void astraCoreDestroy(void);
 
 /*---- C ----*/
@@ -25,11 +24,7 @@ void astraCoreDestroy(void);
 
 /*---- Cpp ----*/
 #include "astra/ui/launcher.h"
-//#include "../hal/hal_dreamCore/hal_dreamCore.h"
 #include "hal/hal-st7789-agfx.h"
-
-extern astra::Launcher* astraLauncher;
-extern astra::Menu* rootPage;
 /*---- Cpp ----*/
 
 #endif

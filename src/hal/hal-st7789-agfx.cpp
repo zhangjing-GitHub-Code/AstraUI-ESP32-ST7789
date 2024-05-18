@@ -16,12 +16,13 @@ void ESPHAL::init(){ // hz 1 KHZ 1000 MHZ 1000000
 	Serial.begin(115200);
 	Serial.print("Inited Serial\nFree RAM:");
 	Serial.println(ESP.getFreeHeap());
-	bool beg=tgfx->begin(60000000);
+	bool beg=tgfx->begin(70000000);
 	assert(1==beg);
-	Serial.println("Inited gfx freq 60 000 000");
+	Serial.println("Inited gfx freq 75 000 000");
 	tgfx->setFont(LOG_FONT); //u8g2_font_10x20_me);
 	Serial.println("[GFX] before fillS");
 	tgfx->fillScreen(0);
+	tgfx->flush();
 	tgfx->setCursor(10,20);
 	tgfx->println("Astra UI (C) WLZW");
 	tgfx->setCursor(10,tgfx->getCursorY());
@@ -35,7 +36,7 @@ void ESPHAL::init(){ // hz 1 KHZ 1000 MHZ 1000000
 	pinMode(EC_A,INPUT);
 	pinMode(EC_B,INPUT);
 	Serial.println("Inited Pin IN mode.\nDone HAL init.");
-	// delay(200);
+	::delay(500);
 	//attachInterrupt(EC_A,enc_resolv,FALLING);
 }
 
@@ -119,7 +120,7 @@ void ESPHAL::_drawEnglish(float _x, float _y, const std::string &_text){
 	tgfx->print(_text.c_str());
 }
 UL ESPHAL::_getRandomSeed(){
-	return analogRead(34);
+	return analogRead(34)*2+analogRead(33)+analogRead(38)*3;
 }
 void ESPHAL::_beep(float freq){
 	;
@@ -133,7 +134,7 @@ UL ESPHAL::_millis(){
 	return ::millis();
 }
 UL ESPHAL::_getTick(){
-	return ::millis()*1000;
+	return ::millis()*100;
 }
 // uint8_t ESPHAL::_getBufferTileHeight(){return 0;}
 uint8_t ESPHAL::_getBufferTileWidth(){return 0;}
@@ -167,27 +168,27 @@ void ESPHAL::_updateConfig(){
 	EEPROM.put(CFG_START_POS,config);
 }
 bool ESPHAL::_getKey(key::KEY_INDEX _keyIndex) {
-  if (_keyIndex == key::KEY_0) return touchRead(TOUCH_KEY0);
-  if (_keyIndex == key::KEY_1) return touchRead(TOUCH_KEY1);
+  if (_keyIndex == key::KEY_0) return touchRead(TOUCH_KEY0)<=80;
+  if (_keyIndex == key::KEY_1) return touchRead(TOUCH_KEY1)<=80;
   return false;
 }
 void ESPHAL::_printInfo(std::__cxx11::string _msg){
 	Serial.println(_msg.c_str());
 }
 // ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
-bool ESPHAL::_getAnyKey() {
+/*bool ESPHAL::_getAnyKey() {
   for (int i = 0; i < key::KEY_NUM; i++) {
     if (getKey(static_cast<key::KEY_INDEX>(i))) return true;
   }
   return false;
-}
+}*/
 
 /**
  * @brief key scanner default. 默认按键扫描函数
  *
  * @note run per 5 ms.
  * @return key::keyValue
- */
+ * /
 void ESPHAL::_keyScan() {
   static unsigned char _timeCnt = 0;
   static bool _lock = false;
@@ -252,11 +253,12 @@ void ESPHAL::_keyScan() {
     default: break;
   }
 }
+*/
 
 /**
  * @brief default key tester. 默认按键测试函数
- */
-void ESPHAL::_keyTest() {
+ * /
+void _keyTest() {
   if (getAnyKey()) {
     for (unsigned char i = 0; i < key::KEY_NUM; i++) {
       if (key[i] == key::CLICK) {
@@ -272,3 +274,4 @@ void ESPHAL::_keyTest() {
     memset(key, key::RELEASE, sizeof(key));
   }
 }
+*/
