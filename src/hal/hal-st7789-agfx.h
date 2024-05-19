@@ -1,3 +1,4 @@
+#define ESP32SPIDMA_MAX_PIXELS_AT_ONCE 256
 #include <U8g2lib.h>
 #include<cstring>
 #include <Arduino.h>
@@ -21,8 +22,8 @@
 
 // U8G2_NULL *u8g2f;
 const int
-  P_DC = 25,
-  P_CS = 5,
+  P_DC = 32, // 25
+  P_CS = 5,  // 5
   P_SCL = 18,
   P_SDA = 23,
   P_RST = 15,
@@ -35,8 +36,9 @@ class ESPHAL:public HAL{
 	private:
 	// key::KEY_TYPE keyFlag;
 	bool _fontSet=false;
+	int8_t _backLight=255;
 	U8G2_NULL *dum_u8g2=new U8G2_NULL(U8G2_R0);
-	Arduino_DataBus *bus = new Arduino_ESP32SPI(
+	Arduino_DataBus *bus = new Arduino_ESP32SPIDMA(
 	  P_DC /* DC */,
 	  P_CS /* CS */,
 	  P_SCL /* SCK */,
@@ -82,6 +84,7 @@ class ESPHAL:public HAL{
   uint8_t _getBufferTileHeight() override;
   uint8_t _getBufferTileWidth() override;
   void _canvasUpdate() override;
+  void backLight(uint8_t value);
   void _canvasClear() override;
   void _setFont(const uint8_t *_font) override;
   uint8_t _getFontWidth(std::string &_text) override;

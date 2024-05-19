@@ -13,7 +13,8 @@ void Launcher::popInfo(std::string _info, uint16_t _time) {
 
   if (!init) {
     init = true;
-    beginTime = this->time;
+    // beginTime = this->time;
+	beginTime = HAL::millis()/1000;
     onRender = true;
   }
 
@@ -24,7 +25,7 @@ void Launcher::popInfo(std::string _info, uint16_t _time) {
   float xPop = (HAL::getSystemConfig().screenWeight - wPop) / 2;  //居中
 
   while (onRender) {
-    time++;
+    time=HAL::millis()/1000;
 
     HAL::canvasClear();
     /*渲染一帧*/

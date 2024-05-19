@@ -16,8 +16,11 @@ void ESPHAL::init(){ // hz 1 KHZ 1000 MHZ 1000000
 	Serial.begin(115200);
 	Serial.print("Inited Serial\nFree RAM:");
 	Serial.println(ESP.getFreeHeap());
-	bool beg=tgfx->begin(70000000);
+	ledcSetup(0,1000,10);
+	ledcAttachPin(GFX_BL,0);
+	bool beg=tgfx->begin(60000000);
 	assert(1==beg);
+	this->backLight(_backLight);
 	Serial.println("Inited gfx freq 75 000 000");
 	tgfx->setFont(LOG_FONT); //u8g2_font_10x20_me);
 	Serial.println("[GFX] before fillS");
@@ -26,7 +29,12 @@ void ESPHAL::init(){ // hz 1 KHZ 1000 MHZ 1000000
 	tgfx->setCursor(10,20);
 	tgfx->println("Astra UI (C) WLZW");
 	tgfx->setCursor(10,tgfx->getCursorY());
-	tgfx->println("ESP32 ver - Jade_zhang233");
+	tgfx->println("ESP32 ver By\n  Jade_zhang233");
+	tgfx->setFont(u8g2_font_unifont_t_chinese3);
+	dum_u8g2->setFont(u8g2_font_unifont_t_chinese3);
+	tgfx->setUTF8Print(true);
+	dum_u8g2->enableUTF8Print();
+	tgfx->println("测试一二三我爱中国");
 	Serial.println("[GFX] before flush");
 	tgfx->flush();
 	Serial.println("Inited gfx Copyright");
@@ -37,8 +45,6 @@ void ESPHAL::init(){ // hz 1 KHZ 1000 MHZ 1000000
 	pinMode(EC_B,INPUT);
 	Serial.println("Inited Pin IN mode.\nDone HAL init.");
 	::delay(500);
-	tgfx->setUTF8Print(true);
-	dum_u8g2->enableUTF8Print();
 	//attachInterrupt(EC_A,enc_resolv,FALLING);
 }
 
@@ -49,10 +55,10 @@ void ESPHAL::_drawPixel(FL x,FL y){
 }
 void ESPHAL::_drawBox(FL x,FL y,FL w,FL h){
 	// int16_t tx=x,ty=y,th=h,tw=w;
-	tgfx->drawRect(I16 x,I16 y,I16 w,I16 h,dumCol);
+	tgfx->fillRect(I16 x,I16 y,I16 w,I16 h,dumCol);
 }
 void ESPHAL::_canvasClear(){
-	tgfx->fillScreen(0);
+	tgfx->normFillScr(0);
 }
 uint8_t *ESPHAL::_getCanvasBuffer(){
 	return tgfx->getFramebuffer();
@@ -61,17 +67,29 @@ uint8_t ESPHAL::_getBufferTileHeight(){
 	return 0;
 }
 void ESPHAL::_screenOn(){
-	tgfx->displayOn();
+	tfdev->displayOn();
+	this->backLight(_backLight);
 }
 void ESPHAL::_screenOff(){
-	tgfx->displayOff();
+	this->backLight(0);
+	tfdev->displayOff();
 }
 void ESPHAL::_canvasUpdate(){
+	//tfdev->displayOff();
+	//tgfx->displayOff();
+	//this->backLight(_backLight-50);
 	tgfx->flush();
+	//this->backLight(_backLight);
+	//tfdev->displayOn();
+}
+void ESPHAL::backLight(uint8_t value){
+	if(value<0||value>255)return;
+	ledcWrite(0,map(value,0,255,0,1023));
 }
 void ESPHAL::_drawVLine(FL x,FL y,FL h){
-	int16_t _x=x,_y=y,_h=h;
-	tgfx->drawLine(_x,_y,_x,_h+_y,dumCol);
+	// int16_t _x=x,_y=y,_h=h;
+	tgfx->drawFastVLine(I16 x,I16 y,I16 h,dumCol);
+	// tgfx->drawLine(_x,_y,_x,_h+_y,dumCol);
 }
 // *S*S* h=5?
 // * h=1
@@ -83,8 +101,9 @@ void ESPHAL::_drawVDottedLine(FL x,FL y,FL h){
 	}
 }
 void ESPHAL::_drawHLine(FL x,FL y,FL w){
-	int16_t _x=x,_y=y,_w=w;
-	tgfx->drawLine(_x,_y,_w+_x,_y,dumCol);
+	// int16_t _x=x,_y=y,_w=w;
+	tgfx->drawFastHLine(I16 x,I16 y,I16 w,dumCol);
+	// tgfx->drawLine(_x,_y,_w+_x,_y,dumCol);
 }
 void ESPHAL::_drawHDottedLine(FL x,FL y,FL w){
 	int16_t _x=x,_y=y,_w=w;
@@ -97,10 +116,11 @@ void ESPHAL::_drawHDottedLine(FL x,FL y,FL w){
 }
 void ESPHAL::_drawRBox(FL x,FL y,FL w,FL h,FL r){
 	int16_t _x=x,_y=y,_w=w,_h=h,_r=r;
-	tgfx->fillRoundRect(_x,_y,_w,_h,_r,dumCol);
+	tgfx->fillRoundRect(I16 x,I16 y,I16 w,I16 h,I16 r,dumCol);
 }
 void ESPHAL::_drawFrame(FL x,FL y,FL w,FL h){
 	int16_t _x=x,_y=y,_w=w,_h=h;
+	tgfx->drawRect(I16 x,I16 y,I16 w,I16 h,dumCol);
 	//tgfx->draw(_x,_y,_w,_h,dumCol);
 }
 void ESPHAL::_drawRFrame(FL x,FL y,FL w,FL h,FL r){

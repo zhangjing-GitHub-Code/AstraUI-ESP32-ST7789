@@ -23,8 +23,10 @@ void astraCoreInit(void) {
   HAL::delay(350);
   astra::drawLogo(100);
 
+  HAL::setFont(astra::getUIConfig().mainFont);
+
   rootPage->addItem(new astra::List("test1"));
-  rootPage->addItem(new astra::List("测试2"));
+  rootPage->addItem(new astra::List("页面2"));
   rootPage->addItem(new astra::List("测试测试3"));
   rootPage->addItem(new astra::List("测试测试3"));
   rootPage->addItem(secondPage);
