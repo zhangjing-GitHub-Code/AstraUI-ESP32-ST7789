@@ -36,4 +36,6 @@ class Arduino_Canvas_Idx_Enhanced:public Arduino_Canvas_Indexed{
 	void setXORdraw(bool isXOR);
 	void normFillScr(uint16_t color);
 	void flush() override;
+	void flushXTaskRecv(void *taskParams);
+	void flushXtask();
 };

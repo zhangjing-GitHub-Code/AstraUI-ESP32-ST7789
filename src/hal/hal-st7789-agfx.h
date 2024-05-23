@@ -13,7 +13,7 @@
 
 #define FL float
 #define UL unsigned long
-
+// ``
 #include "hal.h"
 #include "AGFX-CM-Enhance.h"
 
@@ -37,6 +37,7 @@ class ESPHAL:public HAL{
 	// key::KEY_TYPE keyFlag;
 	bool _fontSet=false;
 	int8_t _backLight=255;
+	TaskHandle_t flTk=0;
 	U8G2_NULL *dum_u8g2=new U8G2_NULL(U8G2_R0);
 	Arduino_DataBus *bus = new Arduino_ESP32SPIDMA(
 	  P_DC /* DC */,

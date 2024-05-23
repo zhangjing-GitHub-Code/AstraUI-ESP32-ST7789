@@ -5,12 +5,42 @@
 #include <Arduino_GFX_Library.h>
 #include "hal-st7789-agfx.h"
 #include <HardwareSerial.h>
+#include "mutex.h"
+
+#define SDEBUG 0
+#if (SDEBUG)
+#define IDB
+#else
+#define IDB if(0)
+#endif
+
 #define GFX_BL 25
 
 #define FL float
 #define UL unsigned long
 
 // u8g2f = new U8G2_NULL(U8G2_R0);
+void flushXTaskRecv(void *taskParams){
+	// bool tval;
+	// xMutex
+	// IDB Serial.println("F:Getting mutex");
+	while(1){
+		while(mutex::isLock){vTaskDelay(1);}
+		mutex::isLock=1;
+	//xSemaphoreTake(mutex::Fmutex,0);
+	//this->flush();
+		gtgfx->flushXtask();
+	// IDB Serial.println("Giving Mutex in flush");
+		mutex::isLock=0;
+		vTaskDelay(5);
+	// xSemaphoreGive(mutex::Fmutex);
+	// Serial.println("Given");
+	//TaskHandle_t hand;
+	//eTaskState sb;
+	//vTaskGetInfo(hand,NULL,NULL,sb);
+	}
+	vTaskDelete(NULL);
+}
 
 void ESPHAL::init(){ // hz 1 KHZ 1000 MHZ 1000000
 	Serial.begin(115200);
@@ -18,7 +48,9 @@ void ESPHAL::init(){ // hz 1 KHZ 1000 MHZ 1000000
 	Serial.println(ESP.getFreeHeap());
 	ledcSetup(0,1000,10);
 	ledcAttachPin(GFX_BL,0);
-	bool beg=tgfx->begin(60000000);
+	mutex::Fmutex=xSemaphoreCreateMutex();
+	gtgfx=tgfx;
+	bool beg=tgfx->begin(62000000);
 	assert(1==beg);
 	this->backLight(_backLight);
 	Serial.println("Inited gfx freq 75 000 000");
@@ -45,6 +77,8 @@ void ESPHAL::init(){ // hz 1 KHZ 1000 MHZ 1000000
 	pinMode(EC_B,INPUT);
 	Serial.println("Inited Pin IN mode.\nDone HAL init.");
 	::delay(500);
+	mutex::isLock=1;
+	xTaskCreatePinnedToCore(flushXTaskRecv,"GFXflushD",2000,NULL,3,&flTk,ARDUINO_EVENT_RUNNING_CORE);
 	//attachInterrupt(EC_A,enc_resolv,FALLING);
 }
 
@@ -78,7 +112,33 @@ void ESPHAL::_canvasUpdate(){
 	//tfdev->displayOff();
 	//tgfx->displayOff();
 	//this->backLight(_backLight-50);
-	tgfx->flush();
+	// Serial.println("Update Pre");
+	mutex::isLock=0; // allow thread to flush
+	vTaskDelay(5);
+	while(mutex::isLock){
+		// Serial.println("Waiting Lock");
+		vTaskDelay(1);
+	}
+	mutex::isLock=1;
+	//vTaskDelay(2);
+	return;
+	// xSemaphoreTake(mutex::Fmutex,0); // Wait until flush() gives mutex
+	// xSemaphoreGive(mutex::Fmutex);
+	while(mutex::isLock){
+		// Serial.println("Waiting Lock");
+		vTaskDelay(100);
+	}
+	// Serial.println("Tried Mutex");
+	if(flTk){
+		// Serial.printf("deleting task@%llx\n",flTk);
+		vTaskDelete(flTk);
+	}
+	// Serial.println("Running FLUSH");
+	int ret;
+	ret=xTaskCreatePinnedToCore(flushXTaskRecv,"GFXflush",2000,NULL,2,&flTk,ARDUINO_EVENT_RUNNING_CORE);
+	// Serial.printf("Created with id %d\n",ret);
+	vTaskDelay(1);
+	// Serial.println("Update Post");
 	//this->backLight(_backLight);
 	//tfdev->displayOn();
 }
@@ -88,7 +148,7 @@ void ESPHAL::backLight(uint8_t value){
 }
 void ESPHAL::_drawVLine(FL x,FL y,FL h){
 	// int16_t _x=x,_y=y,_h=h;
-	tgfx->drawFastVLine(I16 x,I16 y,I16 h,dumCol);
+	tgfx->writeFastVLine(I16 x,I16 y,I16 h,dumCol);
 	// tgfx->drawLine(_x,_y,_x,_h+_y,dumCol);
 }
 // *S*S* h=5?
@@ -102,7 +162,7 @@ void ESPHAL::_drawVDottedLine(FL x,FL y,FL h){
 }
 void ESPHAL::_drawHLine(FL x,FL y,FL w){
 	// int16_t _x=x,_y=y,_w=w;
-	tgfx->drawFastHLine(I16 x,I16 y,I16 w,dumCol);
+	tgfx->writeFastHLine(I16 x,I16 y,I16 w,dumCol);
 	// tgfx->drawLine(_x,_y,_w+_x,_y,dumCol);
 }
 void ESPHAL::_drawHDottedLine(FL x,FL y,FL w){

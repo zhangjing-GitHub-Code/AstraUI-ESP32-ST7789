@@ -1,5 +1,6 @@
 #include <Arduino_GFX_Library.h>
 #include "AGFX-CM-Enhance.h"
+#include "mutex.h"
 
 /** /
 Arduino_Canvas_Mono_Enhanced::Arduino_Canvas_Mono_Enhanced(){
@@ -456,18 +457,25 @@ void Arduino_Canvas_Idx_Enhanced::flush()
 	// Prev 0 This 0 -> skip
   int perfCnt=0,sTime=::millis();
   for(int zidx=0;zidx<ZONE_SPLIT;++zidx){
-    if( _modified[zidx] ||
-        (_modifiedPrev[zidx]&&!_modified[zidx])
-    ){
-      ++perfCnt;
-      //_modified[zidx]=0;
+	uint8_t tm=_modified[zidx];
+     if( _modified[zidx] ||
+         (_modifiedPrev[zidx]&&!_modified[zidx])
+     ){
+      // ++perfCnt;
+      _modified[zidx]=0;
       _output->drawIndexedBitmap(_output_x, _output_y+zidx*ZONE_UNIT, _framebuffer+240*zidx*15, _color_index, WIDTH, ZONE_UNIT);
-    }
-	_modifiedPrev[zidx]=_modified[zidx];
+     }
+	 _modifiedPrev[zidx]=tm;
   }
-  memset(_modified,0,sizeof(_modified));
+  // memset(_modified,0,sizeof(_modified));
   sTime=millis()-sTime;
   if(perfCnt>10){
-    Serial.printf("Flush %d chunk %d mil\n",perfCnt,sTime);
+    // Serial.printf("Flush %d chunk %d mil\n",perfCnt,sTime);
   }
+}
+void Arduino_Canvas_Idx_Enhanced::flushXTaskRecv(void *taskParams){
+	this->flush();
+}
+void Arduino_Canvas_Idx_Enhanced::flushXtask(){
+	this->flush();
 }

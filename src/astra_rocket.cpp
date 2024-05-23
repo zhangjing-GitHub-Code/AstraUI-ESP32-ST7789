@@ -44,7 +44,7 @@ void astraCoreInit(void) {
   astraLauncher->init(rootPage);
 }
 
-void astraCoreStart(void) {
+void astraCoreStart(void *pvParas) {
   for (;;) {  //NOLINT
     astraLauncher->update();
 //    astraCoreTest();

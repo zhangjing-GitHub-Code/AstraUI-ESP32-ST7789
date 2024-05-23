@@ -1,11 +1,23 @@
 #include "astra_rocket.h"
 // #include "astra_rocket.cpp"
-void setup(){
+void start(void *PR){
 	astraCoreInit();
 	// l64a -> l6a wronttyp
 	Serial.println("Init Done");
-	astraCoreStart();
+	astraCoreStart(PR);
+	//astraCoreStart();
 	Serial.println("Exit start?");
+	//ESPHAL *h=new ESPHAL();
+	//h->init();
+}
+void setup(){
+	//astraCoreInit();
+	// l64a -> l6a wronttyp
+	//Serial.println("Init Done");
+	BaseType_t UItaskID=xTaskCreatePinnedToCore(start,"astraMain",240*240+1145,NULL,3,NULL,ARDUINO_RUNNING_CORE);
+	// BaseType_t UItaskID=xTaskCreatePinnedToCore(start,"astraFLSH",240*11,NULL,3,NULL,ARDUINO_EVENT_RUNNING_CORE);
+	//astraCoreStart();
+	Serial.println("Created Main Task");
 	//ESPHAL *h=new ESPHAL();
 	//h->init();
 }
@@ -19,7 +31,7 @@ void loop(){
 	delay(500);
 	return;
 	*/
-	astraCoreStart();
+	//astraCoreStart();
 	if(fuck){
 		Serial.println("FUCK");
 		fuck=0;
