@@ -7,6 +7,7 @@
 #define ASTRA_CORE_SRC_SYSTEM_H_
 
 #include "U8g2lib.h"
+#include "../../hal/hal-esp32-st7789/fonts/font_decl.h"
 #include <Arduino_GFX_Library.h>
 
 namespace astra {
@@ -72,8 +73,8 @@ struct config {
   float logoCopyRightHeight = 8; //logo文字高度
   unsigned char logoStarNum = 16; //logo星星数量
 
-  const unsigned char *logoTitleFont = u8g2_font_lubB18_tr;
-  const unsigned char *logoCopyRightFont = u8g2_font_chargen_92_tf;
+  const unsigned char *logoTitleFont = u8g2_font_Cascadia;
+  const unsigned char *logoCopyRightFont = u8g2_font_myfont;
   const unsigned char *mainFont = u8g2_font_unifont_t_chinese3;
 
   //如果未使用u8g2库 请自行修改这里

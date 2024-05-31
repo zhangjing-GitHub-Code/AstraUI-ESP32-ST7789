@@ -2,6 +2,8 @@
 #include "AGFX-CM-Enhance.h"
 #include "mutex.h"
 
+#define NO_GDB 0
+
 /** /
 Arduino_Canvas_Mono_Enhanced::Arduino_Canvas_Mono_Enhanced(){
 	Arduino_Canvas_Mono::Arduino_Canvas_Mono(int16_t w, int16_t h, Arduino_G *output, int16_t output_x, int16_t output_y, bool verticalByte)
@@ -14,11 +16,26 @@ void Arduino_Canvas_Idx_Enhanced::setXORdraw(bool isXOR){
 	_doXORdraw=isXOR;
 	// Serial.printf("Setting XOR to %d\n",isXOR);
 }
+
 void Arduino_Canvas_Idx_Enhanced::setColorCheck(uint8_t *fb,uint8_t idx){
+	_callSet=1;
+	__asm__ ("":::"memory");
 	if(!_doXORdraw){
 		*fb=idx;
 		return;
 	}
+	//Serial.printf("SC ");
+	//if(_isFillScr){
+	//	*fb=idx;
+	//	return;
+	//}
+	/*
+	_colC++;
+	if(_colC>2000){
+		_colC=0;
+		if(NO_GDB)Serial.printf("SCL %d@%x\n",idx,fb);
+	}
+	*/
 	// Serial.printf("FB %u chk\n",*fb);
 	// uint16_t currcolor=_color_index[*fb];//get_index_color(uint8_t(*fb));
 	if(_color_index[*fb]){
@@ -68,7 +85,7 @@ void Arduino_Canvas_Mono::writePixelPreclipped(int16_t x, int16_t y, uint16_t co
 // Ignoring color arg
 void Arduino_Canvas_Idx_Enhanced::writePixelPreclipped(int16_t x, int16_t y, uint16_t color)
 {
-	_modified[y/ZONE_UNIT]=1;
+	if(_recordMOD)_modified[y/ZONE_UNIT]=1;
   uint8_t idx;
   if (_isDirectUseColorIndex)
   {
@@ -103,11 +120,15 @@ void Arduino_Canvas_Idx_Enhanced::writePixelPreclipped(int16_t x, int16_t y, uin
     setColorCheck(fb,idx);
   }
 }
-
+// Usages: font, middle of RBOX, FillRect
 void Arduino_Canvas_Idx_Enhanced::writeFillRectPreclipped(int16_t x, int16_t y,
                                                      int16_t w, int16_t h, uint16_t color)
 {
-	for(int ty=y;ty<=y+h;++ty)_modified[ty/ZONE_UNIT]=1;
+	//if((!_isFillScr)&&(w>50&&h>10))return;
+	_callSet=0;
+	// Serial.printf("FRP %d+%d,%d+%d\n",x,w,y,h);
+	if(_recordMOD)for(int ty=y;ty<=y+h;ty+=ZONE_UNIT-(ty%ZONE_UNIT))_modified[ty/ZONE_UNIT]=1;
+	__asm__ ("":::"memory");
   uint8_t idx;
   if (_isDirectUseColorIndex)
   {
@@ -156,12 +177,17 @@ void Arduino_Canvas_Idx_Enhanced::writeFillRectPreclipped(int16_t x, int16_t y,
     }
     row += WIDTH;
   }
+  __asm__ ("":::"memory");
+  // if(!_callSet)Serial.printf("NC %d+%d,%d+%d\n",x,w,y,h);
 }
 
 void Arduino_Canvas_Idx_Enhanced::writeFastVLineCore(int16_t x, int16_t y,
                                                 int16_t h, uint8_t idx)
 {
-	for(int ty=y;ty<=y+h;++ty)_modified[ty/ZONE_UNIT]=1;
+	__asm__ ("":::"memory");
+	if(_recordMOD)for(int ty=y;ty<=y+h;ty+=ZONE_UNIT-(ty%ZONE_UNIT))_modified[ty/ZONE_UNIT]=1;
+	if(_recordMOD)_modified[y/ZONE_UNIT]=1;
+	//Serial.printf("ovr VL %d,%d+%d\n",x,y,h);
   if (_ordered_in_range(x, 0, MAX_X) && h)
   { // X on screen, nonzero height
     if (h < 0)
@@ -198,7 +224,8 @@ void Arduino_Canvas_Idx_Enhanced::writeFastVLineCore(int16_t x, int16_t y,
 void Arduino_Canvas_Idx_Enhanced::writeFastHLineCore(int16_t x, int16_t y,
                                                 int16_t w, uint8_t idx)
 {
-  _modified[y/ZONE_UNIT]=1;
+	__asm__ ("":::"memory");
+  if(_recordMOD)_modified[y/ZONE_UNIT]=1;
   if (_ordered_in_range(y, 0, MAX_Y) && w)
   { // Y on screen, nonzero width
     if (w < 0)
@@ -237,19 +264,29 @@ void Arduino_Canvas_Idx_Enhanced::writeFastHLineCore(int16_t x, int16_t y,
 // }
 void Arduino_Canvas_Idx_Enhanced::normFillScr(uint16_t color){
 	bool tmp=_doXORdraw;
-	bool tmod[ZONE_SPLIT+2];
-	for(uint8_t i=0;i<ZONE_SPLIT;++i)tmod[i]=_modified[i];
+	//bool tmod[ZONE_SPLIT+2];
+	//for(uint8_t i=0;i<ZONE_SPLIT;++i)tmod[i]=_modified[i];
+	_recordMOD=0;
 	_doXORdraw=0;
+	_isFillScr=1;
+	__asm__ ("":::"memory");
 	fillScreen(color);
-	for(uint8_t i=0;i<ZONE_SPLIT;++i)_modified[i]=tmod[i];
+	_recordMOD=1;
+	//for(uint8_t i=0;i<ZONE_SPLIT;++i)_modified[i]=tmod[i];
 	_doXORdraw=tmp;
+	_isFillScr=0;
 }
 
 void Arduino_Canvas_Idx_Enhanced::drawIndexedBitmap(
     int16_t x, int16_t y,
     uint8_t *bitmap, uint16_t *color_index, int16_t w, int16_t h, int16_t x_skip)
 {
-	for(int ty=y;ty<=y+h;++ty)_modified[ty/ZONE_UNIT]=1;
+	if(_recordMOD)for(int ty=y;ty<=y+h;ty+=ZONE_UNIT-(ty%ZONE_UNIT))_modified[ty/ZONE_UNIT]=1;
+	if(_recordMOD)_modified[y/ZONE_UNIT]=1;
+	//        w
+	// x,y ******
+	// h *
+	//   *
   if (_rotation > 0)
   {
     if (!_isDirectUseColorIndex)
@@ -351,7 +388,7 @@ void Arduino_Canvas_Idx_Enhanced::drawIndexedBitmap(
     int16_t x, int16_t y,
     uint8_t *bitmap, uint16_t *color_index, uint8_t chroma_key, int16_t w, int16_t h, int16_t x_skip)
 {
-	for(int ty=y;ty<=y+h;++ty)_modified[ty/ZONE_UNIT]=1;
+	if(_recordMOD)for(int ty=y;ty<=y+h;ty+=ZONE_UNIT-(ty%ZONE_UNIT))_modified[ty/ZONE_UNIT]=1;
   if (_rotation > 0)
   {
     if (!_isDirectUseColorIndex)
@@ -455,6 +492,7 @@ void Arduino_Canvas_Idx_Enhanced::flush()
 	// Prev 1 This 0 -> this keep0 but update (Update to black)
 	// This 1 -> update
 	// Prev 0 This 0 -> skip
+	__asm__ ("":::"memory");
   int perfCnt=0,sTime=::millis();
   for(int zidx=0;zidx<ZONE_SPLIT;++zidx){
 	uint8_t tm=_modified[zidx];
@@ -478,4 +516,7 @@ void Arduino_Canvas_Idx_Enhanced::flushXTaskRecv(void *taskParams){
 }
 void Arduino_Canvas_Idx_Enhanced::flushXtask(){
 	this->flush();
+}
+void Arduino_Canvas_Idx_Enhanced::dumpDrawArgs(){
+	Serial.printf("doXOR: %d\nWHi: %d; BLi: %d\nCalled: %d;rec: %d\n",_doXORdraw,idx_white,idx_black,_callSet,_recordMOD);
 }

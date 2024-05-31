@@ -15,7 +15,8 @@
 #define UL unsigned long
 // ``
 #include "../hal.h"
-#include "AGFX-CM-Enhance.h"
+#include "fonts/font_decl.h"
+// #include "fonts/u8g2_font.c"
 
 #ifndef HAL_ESP_ST7789_H
 #define HAL_ESP_ST7789_H
@@ -141,6 +142,7 @@ public: //  void _keyScan();
    */
 public:
   void _updateConfig() override;
+  void dumpInfo();
 };
 
 #endif // HAL_ESP_ST7789_H

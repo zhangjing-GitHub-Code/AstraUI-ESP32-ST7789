@@ -1,12 +1,15 @@
 #include "astra_rocket.h"
+#include <esp_wifi.h>
+// #include "esp-gdbstub/gdbstub.h"
 // #include "astra_rocket.cpp"
 void start(void *PR){
 	astraCoreInit();
+	// esp_wifi_80211_tx();
 	// l64a -> l6a wronttyp
-	Serial.println("Init Done");
+	// Serial.println("Init Done");
 	astraCoreStart(PR);
 	//astraCoreStart();
-	Serial.println("Exit start?");
+	// Serial.println("Exit start?");
 	//ESPHAL *h=new ESPHAL();
 	//h->init();
 }
@@ -18,6 +21,7 @@ void setup(){
 	// BaseType_t UItaskID=xTaskCreatePinnedToCore(start,"astraFLSH",240*11,NULL,3,NULL,ARDUINO_EVENT_RUNNING_CORE);
 	//astraCoreStart();
 	Serial.println("Created Main Task");
+	// gdbstub_init();
 	//ESPHAL *h=new ESPHAL();
 	//h->init();
 }

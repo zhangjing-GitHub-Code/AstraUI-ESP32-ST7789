@@ -7,6 +7,8 @@
 #include <HardwareSerial.h>
 #include "mutex.h"
 
+#define NO_GDB 0
+
 #define SDEBUG 0
 #if (SDEBUG)
 #define IDB
@@ -44,8 +46,8 @@ void flushXTaskRecv(void *taskParams){
 
 void ESPHAL::init(){ // hz 1 KHZ 1000 MHZ 1000000
 	Serial.begin(115200);
-	Serial.print("Inited Serial\nFree RAM:");
-	Serial.println(ESP.getFreeHeap());
+	if(NO_GDB)Serial.print("Inited Serial\nFree RAM:");
+	if(NO_GDB)Serial.println(ESP.getFreeHeap());
 	ledcSetup(0,1000,10);
 	ledcAttachPin(GFX_BL,0);
 	mutex::Fmutex=xSemaphoreCreateMutex();
@@ -53,10 +55,11 @@ void ESPHAL::init(){ // hz 1 KHZ 1000 MHZ 1000000
 	bool beg=tgfx->begin(68000000);
 	assert(1==beg);
 	this->backLight(_backLight);
-	Serial.println("Inited gfx freq 75 000 000");
+	if(NO_GDB)Serial.println("Inited gfx freq 75 000 000");
 	tgfx->setFont(LOG_FONT); //u8g2_font_10x20_me);
-	Serial.println("[GFX] before fillS");
+	if(NO_GDB)Serial.println("[GFX] before fillS");
 	tgfx->fillScreen(0);
+	tfdev->fillScreen(0);
 	tgfx->flush();
 	tgfx->setCursor(10,20);
 	tgfx->println("Astra UI (C) WLZW");
@@ -67,15 +70,15 @@ void ESPHAL::init(){ // hz 1 KHZ 1000 MHZ 1000000
 	tgfx->setUTF8Print(true);
 	dum_u8g2->enableUTF8Print();
 	tgfx->println("测试一二三我爱中国");
-	Serial.println("[GFX] before flush");
+	if(NO_GDB)Serial.println("[GFX] before flush");
 	tgfx->flush();
-	Serial.println("Inited gfx Copyright");
+	if(NO_GDB)Serial.println("Inited gfx Copyright");
 	EEPROM.begin(2048); // No FS support, raw io
-	Serial.println("Inited EEPROM(flash) size 4096");
+	if(NO_GDB)Serial.println("Inited EEPROM(flash) size 4096");
 	pinMode(34,INPUT);
 	pinMode(EC_A,INPUT);
 	pinMode(EC_B,INPUT);
-	Serial.println("Inited Pin IN mode.\nDone HAL init.");
+	if(NO_GDB)Serial.println("Inited Pin IN mode.\nDone HAL init.");
 	::delay(500);
 	mutex::isLock=1;
 	xTaskCreatePinnedToCore(flushXTaskRecv,"GFXflushD",2000,NULL,3,&flTk,ARDUINO_EVENT_RUNNING_CORE);
@@ -148,7 +151,8 @@ void ESPHAL::backLight(uint8_t value){
 }
 void ESPHAL::_drawVLine(FL x,FL y,FL h){
 	// int16_t _x=x,_y=y,_h=h;
-	tgfx->drawFastVLine(I16 x,I16 y,I16 h,dumCol);
+	//tgfx->drawFastVLine(I16 x,I16 y,I16 h,dumCol);
+	for(int cy=y;cy<=y+h;++cy) tgfx->drawPixel(x,cy,dumCol);
 	// tgfx->drawLine(_x,_y,_x,_h+_y,dumCol);
 }
 // *S*S* h=5?
@@ -162,16 +166,17 @@ void ESPHAL::_drawVDottedLine(FL x,FL y,FL h){
 }
 void ESPHAL::_drawHLine(FL x,FL y,FL w){
 	// int16_t _x=x,_y=y,_w=w;
-	tgfx->drawFastHLine(I16 x,I16 y,I16 w,dumCol);
+	// tgfx->drawFastHLine(I16 x,I16 y,I16 w,dumCol);
+	for(int cx=x;cx<=x+w;++cx) tgfx->drawPixel(cx,y,dumCol);
 	// tgfx->drawLine(_x,_y,_w+_x,_y,dumCol);
 }
 void ESPHAL::_drawHDottedLine(FL x,FL y,FL w){
-	int16_t _x=x,_y=y,_w=w;
+	// int16_t _x=x,_y=y,_w=w;
 	// *S*S* h=5?
 	// * h=1
 	// Current X value:
-	for(int cx=_x;cx<_x+_w;cx+=2){
-		tgfx->drawPixel(cx,_y,dumCol);
+	for(int cx=x;cx<=x+w;cx+=2){
+		tgfx->drawPixel(cx,y,dumCol);
 	}
 }
 void ESPHAL::_drawRBox(FL x,FL y,FL w,FL h,FL r){
@@ -232,7 +237,7 @@ uint8_t ESPHAL::_getFontHeight(){
 }
 uint8_t ESPHAL::_getFontWidth(std::__cxx11::string &_text){
 	const char *textp=_text.c_str();
-	return dum_u8g2->getStrWidth(textp);
+	return dum_u8g2->getUTF8Width(textp);
 }
 void ESPHAL::_setDrawType(uint8_t type){
 	dum_u8g2->setDrawColor(type);
@@ -263,7 +268,11 @@ bool ESPHAL::_getKey(key::KEY_INDEX _keyIndex) {
   return false;
 }
 void ESPHAL::_printInfo(std::__cxx11::string _msg){
-	Serial.println(_msg.c_str());
+	if(NO_GDB)Serial.println(_msg.c_str());
+}
+void ESPHAL::dumpInfo(){
+	Serial.printf("COLOR: %x\n",dumCol);
+	tgfx->dumpDrawArgs();
 }
 // ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
 /*bool ESPHAL::_getAnyKey() {

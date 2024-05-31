@@ -281,6 +281,10 @@ public:
   static void updateConfig() { get()->_updateConfig(); }
 
   virtual void _updateConfig() {}
+
+  static void _dumpInfo(){ get()->dumpInfo(); }
+
+  virtual void dumpInfo(){}
 };
 
 #endif //ASTRA_CORE_SRC_HAL_HAL_H_

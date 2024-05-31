@@ -10,6 +10,7 @@ void Launcher::popInfo(std::string _info, uint16_t _time) {
   static bool init = false;
   static unsigned long long int beginTime = this->time;;
   static bool onRender = false;
+	HAL::_dumpInfo();
 
   if (!init) {
     init = true;
@@ -61,6 +62,7 @@ void Launcher::popInfo(std::string _info, uint16_t _time) {
       init = false;
     }
   }
+	HAL::_dumpInfo();
 }
 
 void Launcher::init(Menu *_rootPage) {
@@ -87,6 +89,13 @@ bool Launcher::open() {
   if (currentMenu->getNextMenu() == nullptr) {
     popInfo("unreferenced page!", 600);
     return false;
+  }
+  for(auto wid:currentMenu->childWidget){
+	Serial.print(wid->getType().c_str());
+	if(wid->getType()=="CheckBox"){
+		astra::CheckBox *wg=(astra::CheckBox *)wid;
+		wg->toggle();
+	}
   }
   if (currentMenu->getNextMenu()->getItemNum() == 0) {
     popInfo("empty page!", 600);
