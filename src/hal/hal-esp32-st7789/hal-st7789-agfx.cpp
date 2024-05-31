@@ -46,6 +46,22 @@ void flushXTaskRecv(void *taskParams){
 
 void ESPHAL::init(){ // hz 1 KHZ 1000 MHZ 1000000
 	Serial.begin(115200);
+	Arduino_Canvas_Idx_Enhanced::idx_white=0;
+	Arduino_Canvas_Idx_Enhanced::idx_black=1;
+	tfdev=new Arduino_ST7789(
+	  bus,
+	  P_RST /* RST */,
+	  0 /* rotation */,
+	  true /* IPS */,
+	  240 /* width */,
+	  240 /* height */,
+	  0 /* col offset 1 */,
+	  0 /* row offset 1 */,
+	  0 /* col offset 2 */,
+	  0 /* row offset 2 */
+	);
+	tgfx=new Arduino_Canvas_Idx_Enhanced(240 /* width */, 240 /* height */, tfdev,
+	                                            0 /* output_x */, 0 /* output_y */);
 	if(NO_GDB)Serial.print("Inited Serial\nFree RAM:");
 	if(NO_GDB)Serial.println(ESP.getFreeHeap());
 	ledcSetup(0,1000,10);
@@ -96,6 +112,7 @@ void ESPHAL::_drawBox(FL x,FL y,FL w,FL h){
 }
 void ESPHAL::_canvasClear(){
 	tgfx->normFillScr(0);
+	tgfx->copyFBref();
 }
 uint8_t *ESPHAL::_getCanvasBuffer(){
 	return tgfx->getFramebuffer();

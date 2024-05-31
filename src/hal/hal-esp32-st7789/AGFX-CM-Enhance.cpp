@@ -12,6 +12,9 @@ Arduino_Canvas_Mono_Enhanced::Arduino_Canvas_Mono_Enhanced(){
 }
 */
 
+uint8_t Arduino_Canvas_Idx_Enhanced::idx_black=0;
+uint8_t Arduino_Canvas_Idx_Enhanced::idx_white=1;
+
 void Arduino_Canvas_Idx_Enhanced::setXORdraw(bool isXOR){
 	_doXORdraw=isXOR;
 	// Serial.printf("Setting XOR to %d\n",isXOR);
@@ -19,7 +22,7 @@ void Arduino_Canvas_Idx_Enhanced::setXORdraw(bool isXOR){
 
 void Arduino_Canvas_Idx_Enhanced::setColorCheck(uint8_t *fb,uint8_t idx){
 	_callSet=1;
-	__asm__ ("":::"memory");
+	// __asm__ ("":::"memory");
 	if(!_doXORdraw){
 		*fb=idx;
 		return;
@@ -38,12 +41,67 @@ void Arduino_Canvas_Idx_Enhanced::setColorCheck(uint8_t *fb,uint8_t idx){
 	*/
 	// Serial.printf("FB %u chk\n",*fb);
 	// uint16_t currcolor=_color_index[*fb];//get_index_color(uint8_t(*fb));
-	if(_color_index[*fb]){
+	if((_color_index[*(uint8_t *)((int)fb-(int)_framebuffer+(int)_fb_ref)])&WHITE){
 		// WHITE on WHITE or BLACK ON BLACK
 		*fb=idx_black;// get_color_index(BLACK);
 	}else{
 		*fb=idx_white;// get_color_index(RED);
 	}
+}
+
+
+bool Arduino_Canvas_Idx_Enhanced::begin(int32_t speed)
+{
+  if (speed != GFX_SKIP_OUTPUT_BEGIN)
+  {
+    if (!_output->begin(speed))
+    {
+      return false;
+    }
+  }
+
+  if (!_framebuffer)
+  {
+    size_t s = _width * _height;
+#if defined(ESP32)
+    if (psramFound())
+    {
+      _framebuffer = (uint8_t *)ps_malloc(s);
+    }
+    else
+    {
+      _framebuffer = (uint8_t *)malloc(s);
+	  _fb_ref      = (uint8_t *)malloc(s/8);
+    }
+#else
+    _framebuffer = (uint8_t *)malloc(s);
+#endif
+    if (!_framebuffer || !_fb_ref)
+    {
+      return false;
+    }
+  }
+
+  return true;
+}
+void Arduino_Canvas_Idx_Enhanced::copyFBref(){
+	uint8_t *fb=_framebuffer;
+	uint8_t *fbr=_fb_ref;
+	uint8_t shif=0;
+	memset(_fb_ref,0,_width*_height/8);
+	for(uint8_t x=0;x<240;++x){
+		for(uint8_t y=0;y<240;++y){
+			if(_color_index[*fb]&WHITE){
+				*fbr|=0b10000000>>shif;
+			}
+			if(++shif>7){
+				shif=0;
+				++fbr;
+			}
+			++fb;
+		}
+	}
+	// memcpy(_fb_ref,_framebuffer,(size_t)_width*_height);
 }
 /*
 
@@ -125,7 +183,7 @@ void Arduino_Canvas_Idx_Enhanced::writeFillRectPreclipped(int16_t x, int16_t y,
                                                      int16_t w, int16_t h, uint16_t color)
 {
 	//if((!_isFillScr)&&(w>50&&h>10))return;
-	_callSet=0;
+	// _callSet=0;
 	// Serial.printf("FRP %d+%d,%d+%d\n",x,w,y,h);
 	if(_recordMOD)for(int ty=y;ty<=y+h;ty+=ZONE_UNIT-(ty%ZONE_UNIT))_modified[ty/ZONE_UNIT]=1;
 	__asm__ ("":::"memory");
@@ -177,7 +235,7 @@ void Arduino_Canvas_Idx_Enhanced::writeFillRectPreclipped(int16_t x, int16_t y,
     }
     row += WIDTH;
   }
-  __asm__ ("":::"memory");
+  // __asm__ ("":::"memory");
   // if(!_callSet)Serial.printf("NC %d+%d,%d+%d\n",x,w,y,h);
 }
 
@@ -269,7 +327,7 @@ void Arduino_Canvas_Idx_Enhanced::normFillScr(uint16_t color){
 	_recordMOD=0;
 	_doXORdraw=0;
 	_isFillScr=1;
-	__asm__ ("":::"memory");
+	// __asm__ ("":::"memory");
 	fillScreen(color);
 	_recordMOD=1;
 	//for(uint8_t i=0;i<ZONE_SPLIT;++i)_modified[i]=tmod[i];

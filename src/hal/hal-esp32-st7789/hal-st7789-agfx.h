@@ -1,4 +1,4 @@
-#define ESP32SPIDMA_MAX_PIXELS_AT_ONCE 256
+#define ESP32SPIDMA_MAX_PIXELS_AT_ONCE 512
 #include <U8g2lib.h>
 #include<cstring>
 #include <Arduino.h>
@@ -48,20 +48,8 @@ class ESPHAL:public HAL{
 	  GFX_NOT_DEFINED /* MISO */,
 	  VSPI
 	);
-	Arduino_GFX *tfdev = new Arduino_ST7789(
-	  bus,
-	  P_RST /* RST */,
-	  0 /* rotation */,
-	  true /* IPS */,
-	  240 /* width */,
-	  240 /* height */,
-	  0 /* col offset 1 */,
-	  0 /* row offset 1 */,
-	  0 /* col offset 2 */,
-	  0 /* row offset 2 */
-	);
-	Arduino_Canvas_Idx_Enhanced *tgfx = new Arduino_Canvas_Idx_Enhanced(240 /* width */, 240 /* height */, tfdev,
-	                                            0 /* output_x */, 0 /* output_y */);
+	Arduino_GFX *tfdev;
+	Arduino_Canvas_Idx_Enhanced *tgfx;
 	int dumCol;
 	void enc_resolv(){
 		;

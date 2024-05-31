@@ -10,10 +10,12 @@ class Arduino_Canvas_Idx_Enhanced:public Arduino_Canvas_Indexed{
 		XOR
 	};
 	volatile bool _callSet=false;
+	uint8_t *_fb_ref;
 	eDrawMode _drawMode=NORMAL;
 	volatile bool _doXORdraw=false,_recordMOD=true,_isFillScr=0;
 	uint16_t _colC=0;
-	uint8_t idx_white,idx_black;
+	public:
+	static uint8_t idx_white,idx_black;
 	bool _modified[ZONE_SPLIT+2]={0};
 	bool _modifiedPrev[ZONE_SPLIT+2]={0};
 	public:
@@ -21,12 +23,15 @@ class Arduino_Canvas_Idx_Enhanced:public Arduino_Canvas_Indexed{
     : Arduino_Canvas_Indexed(w, h,output,output_x,output_y){
 		idx_black=get_color_index(BLACK);
 		idx_white=get_color_index(WHITE);
+		Serial.printf("SET B:%d RB%d W:%d,RW%d\n",idx_black,get_color_index(BLACK),idx_white,get_color_index(WHITE));
 	};
 	~Arduino_Canvas_Idx_Enhanced(){
 		if (_framebuffer){
 			free(_framebuffer);
 		}
 	}
+	bool begin(int32_t speed);
+	void copyFBref();
 	// void _setBufTo(int32_t pos,uint16_t x,uint16_t y);
 	void writePixelPreclipped(int16_t x, int16_t y, uint16_t color) override;
 	void writeFastVLineCore(int16_t x,int16_t y,int16_t h,uint8_t idx);
