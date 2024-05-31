@@ -168,6 +168,7 @@ void Arduino_Canvas_Indexed::writeFastHLine(int16_t x, int16_t y,
                                             int16_t w, uint16_t color)
 {
   uint8_t idx;
+  // Serial.printf("IHL %d+%d,%d\n",x,w,y);
   if (_isDirectUseColorIndex)
   {
     idx = (uint8_t)color;

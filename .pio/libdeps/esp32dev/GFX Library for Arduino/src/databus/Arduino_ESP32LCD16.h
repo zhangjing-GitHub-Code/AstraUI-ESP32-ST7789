@@ -4,9 +4,8 @@
  */
 #include "Arduino_DataBus.h"
 
-#if (ESP_ARDUINO_VERSION_MAJOR < 3)
-
 #if defined(ESP32) && (CONFIG_IDF_TARGET_ESP32S3)
+#if (ESP_ARDUINO_VERSION_MAJOR < 3)
 
 #ifndef _ARDUINO_ESP32LCD16_H_
 #define _ARDUINO_ESP32LCD16_H_
@@ -45,6 +44,7 @@ public:
 
   void writeIndexedPixels(uint8_t *data, uint16_t *idx, uint32_t len) override;
   void writeIndexedPixelsDouble(uint8_t *data, uint16_t *idx, uint32_t len) override;
+  void writeYCbCrPixels(uint8_t *yData, uint8_t *cbData, uint8_t *crData, uint16_t w, uint16_t h) override;
 
 protected:
 private:
@@ -90,10 +90,16 @@ private:
     uint16_t* _buffer16;
     uint32_t* _buffer32;
   };
+
+  union
+  {
+    uint8_t *_2nd_buffer;
+    uint16_t *_2nd_buffer16;
+    uint32_t *_2nd_buffer32;
+  };
 };
 
 #endif // _ARDUINO_ESP32LCD16_H_
 
-#endif // #if defined(ESP32) && (CONFIG_IDF_TARGET_ESP32S3)
-
 #endif // #if (ESP_ARDUINO_VERSION_MAJOR < 3)
+#endif // #if defined(ESP32) && (CONFIG_IDF_TARGET_ESP32S3)

@@ -50,7 +50,7 @@ void ESPHAL::init(){ // hz 1 KHZ 1000 MHZ 1000000
 	ledcAttachPin(GFX_BL,0);
 	mutex::Fmutex=xSemaphoreCreateMutex();
 	gtgfx=tgfx;
-	bool beg=tgfx->begin(62000000);
+	bool beg=tgfx->begin(68000000);
 	assert(1==beg);
 	this->backLight(_backLight);
 	Serial.println("Inited gfx freq 75 000 000");
@@ -148,7 +148,7 @@ void ESPHAL::backLight(uint8_t value){
 }
 void ESPHAL::_drawVLine(FL x,FL y,FL h){
 	// int16_t _x=x,_y=y,_h=h;
-	tgfx->writeFastVLine(I16 x,I16 y,I16 h,dumCol);
+	tgfx->drawFastVLine(I16 x,I16 y,I16 h,dumCol);
 	// tgfx->drawLine(_x,_y,_x,_h+_y,dumCol);
 }
 // *S*S* h=5?
@@ -162,7 +162,7 @@ void ESPHAL::_drawVDottedLine(FL x,FL y,FL h){
 }
 void ESPHAL::_drawHLine(FL x,FL y,FL w){
 	// int16_t _x=x,_y=y,_w=w;
-	tgfx->writeFastHLine(I16 x,I16 y,I16 w,dumCol);
+	tgfx->drawFastHLine(I16 x,I16 y,I16 w,dumCol);
 	// tgfx->drawLine(_x,_y,_w+_x,_y,dumCol);
 }
 void ESPHAL::_drawHDottedLine(FL x,FL y,FL w){

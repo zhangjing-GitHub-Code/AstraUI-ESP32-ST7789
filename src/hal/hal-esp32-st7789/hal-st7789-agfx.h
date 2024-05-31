@@ -14,7 +14,7 @@
 #define FL float
 #define UL unsigned long
 // ``
-#include "hal.h"
+#include "../hal.h"
 #include "AGFX-CM-Enhance.h"
 
 #ifndef HAL_ESP_ST7789_H

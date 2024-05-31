@@ -15,7 +15,7 @@ bool test = false;
 unsigned char testIndex = 0;
 unsigned char testSlider = 60;
 
-auto *secondPage = new astra::List("secondPage");
+auto *sysCfgPage = new astra::List("系统设置");
 
 void astraCoreInit(void) {
   HAL::inject(new ESPHAL);
@@ -25,21 +25,21 @@ void astraCoreInit(void) {
 
   HAL::setFont(astra::getUIConfig().mainFont);
 
-  rootPage->addItem(new astra::List("test1"));
+  rootPage->addItem(new astra::List("这是什么"));
   rootPage->addItem(new astra::List("页面2"));
-  rootPage->addItem(new astra::List("测试测试3"));
-  rootPage->addItem(new astra::List("测试测试3"));
-  rootPage->addItem(secondPage);
+  rootPage->addItem(new astra::List("芝士页面3"));
+  rootPage->addItem(new astra::List("P3"));
+  rootPage->addItem(sysCfgPage);
 
-  secondPage->addItem(new astra::List());
-  secondPage->addItem(new astra::List("-测试2"), new astra::CheckBox(test));
-  secondPage->addItem(new astra::Tile("-测试测试3"), new astra::PopUp(1, "测试", {"测试"}, testIndex));
-  secondPage->addItem(new astra::Tile("-测试测试测试4"), new astra::Slider("测试", 0, 100, 50, testSlider));
-  secondPage->addItem(new astra::List("-测试测试测试5"));
-  secondPage->addItem(new astra::List("-测试测试测试6"));
-  secondPage->addItem(new astra::List("-测试测试测试6"));
-  secondPage->addItem(new astra::List("-测试测试测试6"));
-  secondPage->addItem(new astra::List("-测试测试测试6"));
+  sysCfgPage->addItem(new astra::List());
+  sysCfgPage->addItem(new astra::List("-使用亮模式2"), new astra::CheckBox(test));
+  sysCfgPage->addItem(new astra::Tile("-弹窗3"), new astra::PopUp(1, "测试", {"测试"}, testIndex));
+  sysCfgPage->addItem(new astra::Tile("-滑动条4"), new astra::Slider("测试", 0, 100, 50, testSlider));
+  sysCfgPage->addItem(new astra::List("-项目5"));
+  sysCfgPage->addItem(new astra::List("-这是一个6"));
+  sysCfgPage->addItem(new astra::List("-一个一个喜爱那个木6"));
+  sysCfgPage->addItem(new astra::List("-一个一个一个6"));
+  sysCfgPage->addItem(new astra::List("-一个一个项目6"));
 
   astraLauncher->init(rootPage);
 }

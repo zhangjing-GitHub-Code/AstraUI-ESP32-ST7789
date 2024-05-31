@@ -24,7 +24,7 @@ void astraCoreDestroy(void);
 
 /*---- Cpp ----*/
 #include "astra/ui/launcher.h"
-#include "hal/hal-st7789-agfx.h"
+#include "hal/hal-esp32-st7789/hal-st7789-agfx.h"
 /*---- Cpp ----*/
 
 #endif
