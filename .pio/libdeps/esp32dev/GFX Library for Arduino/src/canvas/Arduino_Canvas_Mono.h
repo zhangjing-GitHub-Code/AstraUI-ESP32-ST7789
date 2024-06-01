@@ -13,7 +13,7 @@ public:
   ~Arduino_Canvas_Mono();
 
   bool begin(int32_t speed = GFX_NOT_DEFINED) override;
-  void writePixelPreclipped(int16_t x, int16_t y, uint16_t color) override;
+  virtual void writePixelPreclipped(int16_t x, int16_t y, uint16_t color) override;
   void flush(void) override;
 
   uint8_t *getFramebuffer();

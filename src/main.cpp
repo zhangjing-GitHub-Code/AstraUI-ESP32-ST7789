@@ -25,7 +25,6 @@ void setup(){
 	//ESPHAL *h=new ESPHAL();
 	//h->init();
 }
-bool fuck=1;
 void loop(){
 	/*
 	Serial.print("P27 t=");
@@ -36,9 +35,4 @@ void loop(){
 	return;
 	*/
 	//astraCoreStart();
-	if(fuck){
-		Serial.println("FUCK");
-		fuck=0;
-		return;
-	}
 }

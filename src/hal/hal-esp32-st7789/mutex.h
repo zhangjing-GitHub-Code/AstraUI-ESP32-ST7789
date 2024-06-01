@@ -11,6 +11,6 @@ namespace mutex{
 extern SemaphoreHandle_t Fmutex;
 extern bool isLock;
 };
-extern Arduino_Canvas_Idx_Enhanced *gtgfx;
+extern ACME *gtgfx;
 
 #endif

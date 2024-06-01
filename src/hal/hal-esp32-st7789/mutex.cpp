@@ -10,6 +10,6 @@ namespace mutex{
 SemaphoreHandle_t Fmutex;
 bool isLock=0;
 };
-Arduino_Canvas_Idx_Enhanced *gtgfx;
+ACME *gtgfx;
 
 #endif
