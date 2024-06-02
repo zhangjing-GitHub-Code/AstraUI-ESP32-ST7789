@@ -4,6 +4,7 @@
 #include <Arduino.h>
 #include <Arduino_GFX_Library.h>
 #include "AGFX-CM-Enhance.h"
+//#include "esp_async_memcpy.h"
 #include <EEPROM.h>
 #include <HardwareSerial.h>
 #define GFX_BL 25
@@ -40,7 +41,7 @@ class ESPHAL:public HAL{
 	int8_t _backLight=255;
 	TaskHandle_t flTk=0;
 	U8G2_NULL *dum_u8g2=new U8G2_NULL(U8G2_R0);
-	Arduino_DataBus *bus = new Arduino_ESP32SPIDMA(
+	Arduino_ESP32SPIDMA *bus = new Arduino_ESP32SPIDMA(
 	  P_DC /* DC */,
 	  P_CS /* CS */,
 	  P_SCL /* SCK */,
@@ -48,7 +49,7 @@ class ESPHAL:public HAL{
 	  GFX_NOT_DEFINED /* MISO */,
 	  VSPI
 	);
-	Arduino_GFX *tfdev;
+	Arduino_ST7789 *tfdev;
 	ACME *tgfx;
 	int dumCol;
 	void enc_resolv(){

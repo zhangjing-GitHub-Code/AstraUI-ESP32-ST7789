@@ -12,10 +12,20 @@ Arduino_Canvas_Mono_Enhanced::Arduino_Canvas_Mono_Enhanced(){
 }
 */
 
-uint8_t ACME::idx_black=0;
-uint8_t ACME::idx_white=1;
+//uint8_t ACME::idx_black=0;
+//uint8_t ACME::idx_white=1;
 
-void ACME::setXORdraw(bool isXOR){
+// 回调实现，在 ISR 上下文中运行
+static bool recv_DMAmemcpy(async_memcpy_t mcp_hdl, async_memcpy_event_t *event, void *cb_args)
+{
+    SemaphoreHandle_t sem = (SemaphoreHandle_t)cb_args;
+    BaseType_t high_task_wakeup = pdFALSE;
+    xSemaphoreGiveFromISR(sem, &high_task_wakeup); // 如果解锁了一些高优先级任务，则将 high_task_wakeup 设置为 pdTRUE
+    return high_task_wakeup == pdTRUE;
+}
+
+
+void IRAM_ATTR ACME::setXORdraw(bool isXOR){
 	_doXORdraw=isXOR;
 	// Serial.printf("Setting XOR to %d\n",isXOR);
 }
@@ -96,7 +106,7 @@ bool ACME::begin(int32_t speed)
 
   return true;
 }
-void ACME::copyFBref(){
+void IRAM_ATTR ACME::copyFBref(){
 	/*uint8_t *fb=_framebuffer;
 	uint8_t *fbr=_fb_ref;
 	uint8_t shif=0;
@@ -113,7 +123,16 @@ void ACME::copyFBref(){
 			++fb;
 		}
 	}*/
-	memcpy(_fb_ref,_framebuffer,fbsz);
+	// memcpy(_fb_ref,_framebuffer,fbsz);
+	memset(_fb_ref,0,fbsz);
+// 创建一个信号量，在异步 memcpy 完成时进行报告
+	//SemaphoreHandle_t semphr = xSemaphoreCreateBinary();
+
+// 从用户的上下文中调用
+// ESP_ERROR_CHECK(esp_async_memcpy(driver_handle, to, from, copy_len, my_async_memcpy_cb, my_semaphore));
+// 其他事项
+	//ESP_ERROR_CHECK(esp_async_memcpy(mutex::AMdri,_fb_ref,_framebuffer,fbsz,NULL,semphr));
+	//xSemaphoreTake(semphr, portMAX_DELAY); // 等待 buffer 复制完成
 }
 /*
 
@@ -153,12 +172,13 @@ void Arduino_Canvas_Mono::writePixelPreclipped(int16_t x, int16_t y, uint16_t co
 */
 
 // Ignoring color arg
-void ACME::writePixelPreclipped(int16_t x, int16_t y, uint16_t color)
+void IRAM_ATTR ACME::writePixelPreclipped(int16_t x, int16_t y, uint16_t color)
 {
-	// if(x>230&&y>230)Serial.printf("Enter Pixel %d,%d<-%x\n",x,y,color);
+	
 	if(_recordMOD)_modified[y/ZONE_UNIT]=1;
+	// if(x>230&&y>230)Serial.printf("Enter Pixel %d,%d<-%x\n",x,y,color);
   uint8_t idx;
-  // change the pixel in the original orientation of the bitmap buffer
+  /*// change the pixel in the original orientation of the bitmap buffer
   if (_verticalByte) // = false, don't look
   {
     // vertical buffer layout: 1 byte in the buffer contains 8 vertical pixels
@@ -174,17 +194,20 @@ void ACME::writePixelPreclipped(int16_t x, int16_t y, uint16_t color)
     }
   }
   else
-  {
+  {*/
     // horizontal buffer layout: 1 byte in the buffer contains 8 horizontal pixels
     int16_t w = (_canvas_width + 7) / 8;
     int32_t pos = (y * w) + (x / 8);
 #define mask (0x80 >> (x & 7))
+	if(_fb_ref[pos]&mask)return;
+	_fb_ref[pos]|=mask;
 	if(_doXORdraw){
-		if(!(_fb_ref[pos]&mask)){
+		// if(_recordMOD)_modified[y/ZONE_UNIT]=1;
+		if(_fb_ref[pos]&mask){
+			_framebuffer[pos] &= ~mask;
+		}else{
 			// this is white
 			_framebuffer[pos] |= mask;
-		}else{
-			_framebuffer[pos] &= ~mask;
 		}
 		return;
 	}
@@ -192,20 +215,23 @@ void ACME::writePixelPreclipped(int16_t x, int16_t y, uint16_t color)
     if (	(color & 0b1000010000010000) // || // Draw White
 			// (_doXORdraw&&!(_framebuffer[pos]&mask)) // XOR read black
 	){
+		// to draw a white
+		
+	// if(_recordMOD)_modified[y/ZONE_UNIT]=_framebuffer[pos]&mask?0:1;
       _framebuffer[pos] |= mask;
     }
     else // NOT white NOR XOR read white
     {
+	// if(_recordMOD)_modified[y/ZONE_UNIT]=_framebuffer[pos]&mask?1:0;
       _framebuffer[pos] &= ~mask;
     }
-  }
+  //}
 }
 void ACME::normFillScr(uint16_t color){
 	bool tmp=_doXORdraw;
 	//bool tmod[ZONE_SPLIT+2];
 	//for(uint8_t i=0;i<ZONE_SPLIT;++i)tmod[i]=_modified[i];
-	_recordMOD=0;
-	_doXORdraw=0;
+	_recordMOD=_doXORdraw=0;
 	_isFillScr=1;
 	// __asm__ ("":::"memory");
 	fillScreen(color);
@@ -235,23 +261,23 @@ void ACME::flush()
 	//if (_output)
     //	_output->drawBitmap(_output_x, _output_y, _framebuffer, _canvas_width, _canvas_height, WHITE, BLACK);
 	
-  int perfCnt=0,sTime=::millis();
+  // int perfCnt=0,sTime=::millis();
   for(int zidx=0;zidx<ZONE_SPLIT;++zidx){
 	uint8_t tm=_modified[zidx];
      if( tm ||
          (_modifiedPrev[zidx]&&!tm)
      ){
       // ++perfCnt;
-      _modified[zidx]=0;
+      _modified[zidx]&=0;
       _output->drawBitmap(_output_x, _output_y+zidx*ZONE_UNIT, _framebuffer+240*zidx*15/8, _canvas_width,ZONE_UNIT,WHITE,BLACK);
      }
 	 _modifiedPrev[zidx]=tm;
   }
   // memset(_modified,0,sizeof(_modified));
-  sTime=millis()-sTime;
-  if(perfCnt>10){
+  // sTime=millis()-sTime;
+  // if(perfCnt>10){
     // Serial.printf("Flush %d chunk %d mil\n",perfCnt,sTime);
-  }
+  // }
 }
 void ACME::flushXTaskRecv(void *taskParams){
 	this->flush();
@@ -260,5 +286,5 @@ void ACME::flushXtask(){
 	this->flush();
 }
 void ACME::dumpDrawArgs(){
-	Serial.printf("doXOR: %d\nWHi: %d; BLi: %d\nCalled: %d;rec: %d\n",_doXORdraw,idx_white,idx_black,_callSet,_recordMOD);
+	// Serial.printf("doXOR: %d\nWHi: %d; BLi: %d\nCalled: %d;rec: %d\n",_doXORdraw,idx_white,idx_black,_callSet,_recordMOD);
 }

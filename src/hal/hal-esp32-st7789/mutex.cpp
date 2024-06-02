@@ -9,6 +9,7 @@
 namespace mutex{
 SemaphoreHandle_t Fmutex;
 bool isLock=0;
+async_memcpy_t AMdri;
 };
 ACME *gtgfx;
 

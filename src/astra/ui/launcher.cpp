@@ -147,6 +147,7 @@ bool Launcher::close() {
 }
 
 void Launcher::update() {
+	unsigned long st=HAL::millis();
   HAL::canvasClear();
 
   currentMenu->render(camera->getPosition());
@@ -165,10 +166,10 @@ void Launcher::update() {
 //  if (time == 2900) close();
 //  if (time == 3200) selector->go(0);  //test
 //  if (time >= 3250) time = 0;  //test
-
-  if (time > 2) {
+// >2 : 0 1 2 x
+  if (time%4==1) {
     HAL::keyScan();
-    time = 0;
+    //time = 0;
   }
 
   if (*HAL::getKeyFlag() == key::KEY_PRESSED) {
@@ -190,5 +191,11 @@ void Launcher::update() {
 
   //time++;
   time = HAL::millis() / 1000;
+  sumt+=HAL::millis()-st;
+  ++tc;
+  if(sumt>1500){
+	Serial.printf("AVG:%d\n",sumt/tc);
+	tc=sumt=0;
+  }
 }
 }

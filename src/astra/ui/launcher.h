@@ -13,6 +13,7 @@ namespace astra {
 
 class Launcher {
 private:
+  uint32_t sumt=0,tc=0;
   Menu* currentMenu;
   Widget* currentWidget = nullptr;
   Selector* selector;

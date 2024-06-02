@@ -1,5 +1,7 @@
 #pragma once
 #include <Arduino_GFX_Library.h>
+#include "esp_attr.h"
+//#include "esp_async_memcpy.h"
 #define ZONE_SPLIT 16
 const int ZONE_UNIT=240/ZONE_SPLIT;
 class ACME:public Arduino_Canvas_Mono{
