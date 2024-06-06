@@ -7,6 +7,8 @@
 #include <HardwareSerial.h>
 #include "mutex.h"
 
+using namespace mutex;
+
 #define XORCPY if(tgfx->_doXORdraw)tgfx->copyFBref()
 
 #define NO_GDB 1
@@ -30,16 +32,22 @@ void flushXTaskRecv(void *taskParams){
 	// xMutex
 	// IDB Serial.println("F:Getting mutex");
 	while(1){
-		while(mutex::isLock){vTaskDelay(1);}
-		mutex::isLock=1;
+		// lockStat st=FREE;
+		WAIT_LOCK(FREE);
+		ulock=FLUSHING;
 	//this->flush();
 		tm=::millis();
 		gtgfx->flushXtask();
 		gtgfx->flush_dur=::millis()-tm;
 		// Serial.printf("F:%d\n",::millis()-tm);
 	// IDB Serial.println("Giving Mutex in flush");
-		mutex::isLock=0;
+		ulock=CLEARING;
+		gtgfx->clearFrameBuffer();
 		vTaskDelay(3);
+		// memset(gtgfx->_fr);
+		//mutex::ulock=0;
+		vTaskDelay(3);
+		ulock=HELD;
 	// Serial.println("Given");
 	//TaskHandle_t hand;
 	}
@@ -106,7 +114,7 @@ void ESPHAL::init(){ // hz 1 KHZ 1000 MHZ 1000000
 	pinMode(EC_B,INPUT);
 	if(NO_GDB)Serial.println("Inited Pin IN mode.\nDone HAL init.");
 	::delay(500);
-	mutex::isLock=1;
+	mutex::ulock=HELD;
 	xTaskCreatePinnedToCore(flushXTaskRecv,"GFXflushD",4000,NULL,2,&flTk,ARDUINO_EVENT_RUNNING_CORE);
 	//attachInterrupt(EC_A,enc_resolv,FALLING);
 }
@@ -124,8 +132,9 @@ void ESPHAL::_drawBox(FL x,FL y,FL w,FL h){
 	tgfx->fillRect(I16 x,I16 y,I16 w,I16 h,dumCol);
 }
 void ESPHAL::_canvasClear(){
+	XORCPY;
 	tgfx->normFillScr(0);
-	tgfx->copyFBref();
+	// tgfx->copyFBref();
 	tgfx->calc_start=::millis();
 }
 uint8_t *ESPHAL::_getCanvasBuffer(){
@@ -149,13 +158,16 @@ void ESPHAL::_canvasUpdate(){
 	// Serial.println("Update Pre");
 	tgfx->setCursor(10,190);
 	tgfx->printf("R:%d Fp:%d ms",::millis()-tgfx->calc_start,tgfx->flush_dur);
-	mutex::isLock=0; // allow thread to flush
+	WAIT_LOCK(HELD);
+	mutex::ulock=FREE; // allow thread to flush
 	vTaskDelay(3);
-	while(mutex::isLock){
+	while(mutex::ulock<CLEARING){
 		// Serial.println("Waiting Lock");
 		vTaskDelay(1);
 	}
-	mutex::isLock=1;
+	vTaskDelay(2);
+	tgfx->swapFB();
+	//mutex::ulock=HELD;
 	//vTaskDelay(2);
 	// return;
 }
@@ -174,12 +186,14 @@ void ESPHAL::_drawVLine(FL x,FL y,FL h){
 // * h=1
 // Current Y value:
 void ESPHAL::_drawVDottedLine(FL x,FL y,FL h){
+	XORCPY;
 	int16_t _x=x,_y=y,_h=h;
 	for(int cy=_y;cy<_y+_h;cy+=2){
 		tgfx->drawPixel(_x,cy,dumCol);
 	}
 }
 void ESPHAL::_drawHLine(FL x,FL y,FL w){
+	XORCPY;
 	// int16_t _x=x,_y=y,_w=w;
 	// tgfx->drawFastHLine(I16 x,I16 y,I16 w,dumCol);
 	for(int cx=x;cx<=x+w;++cx) tgfx->drawPixel(cx,y,dumCol);
@@ -217,14 +231,14 @@ void ESPHAL::_drawBMP(float _x, float _y, float _w, float _h, const uint8_t *_bi
 	tgfx->drawBitmap(x,y,_bitMap,w,h,dumCol);
 }
 void ESPHAL::_drawChinese(float _x, float _y, const std::string &_text){
-	tgfx->setUTF8Print(1);
+	// tgfx->setUTF8Print(1);
 	//tgfx->copyFBref();
 	XORCPY;
 	tgfx->setCursor(I16 _x,I16 _y);
 	tgfx->print(_text.c_str());
 }
 void ESPHAL::_drawEnglish(float _x, float _y, const std::string &_text){
-	tgfx->setUTF8Print(1);
+	// tgfx->setUTF8Print(1);
 	tgfx->setCursor(I16 _x,I16 _y);
 	tgfx->print(_text.c_str());
 }
@@ -240,7 +254,7 @@ void ESPHAL::_delay(UL millis){
 	::delay(millis);
 }
 UL ESPHAL::_millis(){
-	return ::millis();
+	return ::millis()*1000;
 }
 UL ESPHAL::_getTick(){
 	return ::millis()*10;

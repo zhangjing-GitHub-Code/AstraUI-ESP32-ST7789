@@ -12,7 +12,11 @@ class ACME:public Arduino_Canvas_Mono{
 		XOR
 	};
 	size_t fbsz;
-	volatile bool _callSet=false;
+	// _framebuffer: current using fb
+	// _fb0,_fb1: pointer of the 2 fbs
+	uint8_t *_fb0, *_fb1;
+	public:
+	volatile bool _callSet=false,_useFB0=true;
 	uint8_t *_fb_ref;
 	eDrawMode _drawMode=NORMAL;
 	public:
@@ -36,6 +40,8 @@ class ACME:public Arduino_Canvas_Mono{
 	}
 	bool begin(int32_t speed);
 	void copyFBref();
+	void swapFB();
+	void clearFrameBuffer();
 	// void _setBufTo(int32_t pos,uint16_t x,uint16_t y);
 	void writePixelPreclipped(int16_t x, int16_t y, uint16_t color) override;
 	//void writeFastVLineCore(int16_t x,int16_t y,int16_t h,uint8_t idx);

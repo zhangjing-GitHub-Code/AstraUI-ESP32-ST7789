@@ -8,9 +8,9 @@
 
 namespace mutex{
 SemaphoreHandle_t Fmutex;
-bool isLock=0;
+lockStat ulock;
 async_memcpy_t AMdri;
 };
 ACME *gtgfx;
-
+// void WAIT_LOCK(mutex::lockStat x){while(mutex::ulock!=x){vTaskDelay(1);}}
 #endif

@@ -15,17 +15,17 @@ namespace astra {
  * @brief config of astra ui. astra ui的配置结构体
  */
 struct config {
-  float tileAnimationSpeed = 70; // 70
-  float listAnimationSpeed = 70;
-  float selectorYAnimationSpeed = 60;
-  float selectorXAnimationSpeed = 70;
+  float tileAnimationSpeed = 90; // 70
+  float listAnimationSpeed = 80;
+  float selectorYAnimationSpeed = 70;
+  float selectorXAnimationSpeed = 80;
   float selectorWidthAnimationSpeed = 70;
   float selectorHeightAnimationSpeed = 55;
   float windowAnimationSpeed = 25; // 25
   float sideBarAnimationSpeed = 15;
   float fadeAnimationSpeed = 100;
-  float cameraAnimationSpeed = 80; // 80
-  float logoAnimationSpeed = 70; // 70
+  float cameraAnimationSpeed = 90; // 80
+  float logoAnimationSpeed = 80; // 70
 
   bool tileUnfold = true;
   bool listUnfold = true;
@@ -45,9 +45,9 @@ struct config {
 
   float tilePicWidth = 30;
   float tilePicHeight = 30;
-  float tilePicMargin = 8;
-  float tilePicTopMargin = 8; //图标上边距
-  float tileArrowWidth = 6;
+  float tilePicMargin = 10; // 8
+  float tilePicTopMargin = 18; // 8 //图标上边距
+  float tileArrowWidth = 8; // 6
   float tileArrowMargin = 4; //箭头边距
 
   float tileDottedLineBottomMargin = 18; //虚线下边距(top: 46)
@@ -68,7 +68,7 @@ struct config {
   float popRadius = 5; // 2 //弹窗圆角半径
   float popSpeed = 90; //弹窗动画速度
 
-  float logoStarLength = 4; //logo星星长度
+  float logoStarLength = 5; //logo星星长度
   float logoTextHeight = 14; //logo文字高度
   float logoCopyRightHeight = 8; //logo文字高度
   unsigned char logoStarNum = 16; //logo星星数量
@@ -86,7 +86,7 @@ struct config {
   float checkBoxHeight = 8;
   float checkBoxTopMargin = 4; //与选项上边缘的距离
   float checkBoxRightMargin = 10; //与屏幕右边缘的距离
-  float checkBoxRadius = 3; // 1
+  float checkBoxRadius = 5; // 4 // 1
 };
 
 static config &getUIConfig() {

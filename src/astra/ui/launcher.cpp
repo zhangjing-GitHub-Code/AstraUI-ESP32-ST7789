@@ -2,6 +2,9 @@
 // Created by Fir on 2024/2/2.
 //
 
+#define TIMERST st=HAL::millis()/1000
+#define TIMERED(x) Serial.printf("%s:%d\n",x,HAL::millis()/1000-st)
+
 #include "launcher.h"
 
 namespace astra {
@@ -145,15 +148,18 @@ bool Launcher::close() {
 
   return true;
 }
-
+unsigned long st;
 void Launcher::update() {
-	unsigned long st=HAL::millis();
+	//unsigned long st=HAL::millis();
+	TIMERST;
   HAL::canvasClear();
-
+	TIMERED("clr");
+	TIMERST;
   currentMenu->render(camera->getPosition());
   if (currentWidget != nullptr) currentWidget->render(camera->getPosition());
   selector->render(camera->getPosition());
   camera->update(currentMenu, selector);
+  TIMERED("CALC");
 
 //  if (time == 500) selector->go(3);  //test
 //  if (time == 800) open();  //test
@@ -193,8 +199,8 @@ void Launcher::update() {
   time = HAL::millis() / 1000;
   sumt+=HAL::millis()-st;
   ++tc;
-  if(sumt>1500){
-	Serial.printf("AVG:%d\n",sumt/tc);
+  if(sumt>1500000){
+	Serial.printf("AVG:%d\n",sumt/tc/1000);
 	tc=sumt=0;
   }
 }

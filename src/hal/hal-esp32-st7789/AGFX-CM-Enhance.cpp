@@ -87,24 +87,42 @@ bool ACME::begin(int32_t speed)
 #if defined(ESP32)
     if (psramFound())
     {
-      _framebuffer = (uint8_t *)ps_malloc(fbsz);
+      // _framebuffer = (uint8_t *)ps_malloc(fbsz);
+      _fb0    = (uint8_t *)ps_malloc(fbsz);
+      _fb1    = (uint8_t *)ps_malloc(fbsz);
+	  _fb_ref = (uint8_t *)ps_malloc(fbsz);
     }
     else
     {
-      _framebuffer = (uint8_t *)malloc(fbsz);
-	  _fb_ref      = (uint8_t *)malloc(fbsz);
+      _fb0    = (uint8_t *)malloc(fbsz);
+      _fb1    = (uint8_t *)malloc(fbsz);
+	  _fb_ref = (uint8_t *)malloc(fbsz);
     }
 #else
     _framebuffer = (uint8_t *)malloc(s);
 #endif
-    if (!_framebuffer)
+    if (!(_fb_ref&&_fb0&&_fb1))
     {
       return false;
     }
-	memset(_framebuffer,0,fbsz);
+	memset(_fb0,0,fbsz);
+	memset(_fb1,0,fbsz);
+	_framebuffer=_fb0;
   }
 
   return true;
+}
+void IRAM_ATTR ACME::swapFB(){
+	if(_useFB0){
+		_framebuffer=_fb1;
+	}else{
+		_framebuffer=_fb0;
+	}
+	_useFB0^=1;
+}
+void IRAM_ATTR ACME::clearFrameBuffer(){
+	if(_useFB0)memset(_fb0,0,fbsz);
+	else memset(_fb1,0,fbsz);
 }
 void IRAM_ATTR ACME::copyFBref(){
 	/*uint8_t *fb=_framebuffer;
@@ -174,8 +192,9 @@ void Arduino_Canvas_Mono::writePixelPreclipped(int16_t x, int16_t y, uint16_t co
 // Ignoring color arg
 void IRAM_ATTR ACME::writePixelPreclipped(int16_t x, int16_t y, uint16_t color)
 {
-	
+
 	if(_recordMOD)_modified[y/ZONE_UNIT]=1;
+	//if(_recordMOD)_modified[y/ZONE_UNIT]=1;
 	// if(x>230&&y>230)Serial.printf("Enter Pixel %d,%d<-%x\n",x,y,color);
   uint8_t idx;
   /*// change the pixel in the original orientation of the bitmap buffer
@@ -199,16 +218,19 @@ void IRAM_ATTR ACME::writePixelPreclipped(int16_t x, int16_t y, uint16_t color)
     int16_t w = (_canvas_width + 7) / 8;
     int32_t pos = (y * w) + (x / 8);
 #define mask (0x80 >> (x & 7))
-	if(_fb_ref[pos]&mask)return;
-	_fb_ref[pos]|=mask;
 	if(_doXORdraw){
+		if(_fb_ref[pos]&mask)return;
+		_fb_ref[pos]|=mask;
 		// if(_recordMOD)_modified[y/ZONE_UNIT]=1;
-		if(_fb_ref[pos]&mask){
+		_framebuffer[pos]= _framebuffer[pos]&mask ? _framebuffer[pos]& (~mask) : _framebuffer[pos]|mask ;
+		/* replaced:
+		if(_framebuffer[pos]&mask){
 			_framebuffer[pos] &= ~mask;
 		}else{
 			// this is white
 			_framebuffer[pos] |= mask;
 		}
+		*/
 		return;
 	}
 	// Original Flavor
@@ -234,7 +256,8 @@ void ACME::normFillScr(uint16_t color){
 	_recordMOD=_doXORdraw=0;
 	_isFillScr=1;
 	// __asm__ ("":::"memory");
-	fillScreen(color);
+	// fillScreen(color);
+	clearFrameBuffer();
 	_recordMOD=1;
 	//for(uint8_t i=0;i<ZONE_SPLIT;++i)_modified[i]=tmod[i];
 	_doXORdraw=tmp;
