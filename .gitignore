@@ -9,3 +9,5 @@
 .pio/libdeps/**/*.o
 **/examples/**
 .pio\libdeps\esp32dev\GFX Library for Arduino\examples
+**/fonts/**/*.h
+**/Fonts/**/*.h

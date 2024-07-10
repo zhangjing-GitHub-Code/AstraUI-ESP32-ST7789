@@ -6,8 +6,11 @@
 #ifndef MUTEX_H
 #define MUTEX_H
 
+#define SPR_TYPE LGFX_SpriteMX
 
-#include "AGFX-CM-Enhance.h"
+#define LGFX_USE_V1
+
+#include "lgfx-st7789-device.h"
 
 namespace mutex{
 // WAIT until x is true
@@ -23,7 +26,7 @@ extern SemaphoreHandle_t Fmutex;
 extern lockStat ulock;
 extern async_memcpy_t AMdri;
 };
-extern ACME *gtgfx;
+extern SPR_TYPE *glgfx;
 
 // void WAIT_LOCK(mutex::lockStat x);
 #endif

@@ -200,7 +200,7 @@ void Launcher::update() {
   sumt+=HAL::millis()-st;
   ++tc;
   if(sumt>1500000){
-	Serial.printf("AVG:%d\n",sumt/tc/1000);
+	// Serial.printf("AVG:%d\n",sumt/tc/1000);
 	tc=sumt=0;
   }
 }
